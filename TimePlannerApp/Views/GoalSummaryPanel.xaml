@@ -1,0 +1,74 @@
+<UserControl x:Class="TimePlannerApp.Views.GoalSummaryPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border Background="{StaticResource BgPanelBrush}"
+            BorderBrush="{StaticResource BorderSubtleBrush}"
+            BorderThickness="1"
+            CornerRadius="12"
+            Padding="16,14">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Süreç Hedefleri -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Süreç Hedefleri" FontSize="14.5" FontWeight="Bold" Foreground="#F8FAFC" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Sınır Yok" FontSize="11.5" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <Button Content="Yönet"
+                                Style="{StaticResource SubtleButtonStyle}"
+                                Padding="8,2"
+                                FontSize="11"
+                                Click="ManageGoalsButton_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="ProcessSummaryStack" />
+                </ScrollViewer>
+            </Grid>
+
+            <!-- Right: Görev Hedefleri -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Görev Hedefleri" FontSize="14.5" FontWeight="Bold" Foreground="#F8FAFC" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Haftalık Min. Süre" FontSize="11.5" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <Button Content="Yönet"
+                                Style="{StaticResource SubtleButtonStyle}"
+                                Padding="8,2"
+                                FontSize="11"
+                                Click="ManageGoalsButton_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="TaskSummaryStack" />
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,0 +1,251 @@
+<UserControl x:Class="TimePlannerApp.Views.GoalsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Top Add / Edit Goal Card -->
+        <Border Grid.Row="0"
+                Background="{StaticResource BgPanelBrush}"
+                BorderBrush="{StaticResource BorderSubtleBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="20"
+                Margin="0,0,0,16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <Grid Grid.Row="0" Margin="0,0,0,14">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock x:Name="FormHeaderText"
+                                   Text="Yeni Hedef Oluştur"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="#F8FAFC" />
+                        <TextBlock Text="Süreç (sınırsız toplam takip) veya Görev (haftalık minimum hedef süreli) başlığı ekleyin."
+                                   FontSize="12"
+                                   Foreground="#64748B"
+                                   Margin="0,3,0,0" />
+                    </StackPanel>
+
+                    <Border x:Name="EditModeBadge"
+                            Grid.Column="1"
+                            Visibility="Collapsed"
+                            Background="#2A2411"
+                            BorderBrush="#CA8A04"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="10,4"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="Düzenleme Modu" FontSize="11.5" FontWeight="SemiBold" Foreground="#FDE047" />
+                    </Border>
+                </Grid>
+
+                <!-- Inputs Row -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Goal Title -->
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Hedef Başlığı" FontSize="11.5" FontWeight="SemiBold" Foreground="#94A3B8" Margin="2,0,0,6" />
+                        <Grid>
+                            <TextBox x:Name="TitleTextBox"
+                                     Style="{StaticResource DarkTextBoxStyle}"
+                                     Height="36"
+                                     MaxLength="80"
+                                     KeyDown="FormInput_KeyDown"
+                                     TextChanged="TitleTextBox_TextChanged" />
+                            <TextBlock x:Name="TitlePlaceholderText"
+                                       Text="Örn: Ders Çalışma, Matematik Ödevi..."
+                                       FontSize="12.5"
+                                       Foreground="#475569"
+                                       Margin="12,0,0,0"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False" />
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Goal Type Selector -->
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Hedef Türü" FontSize="11.5" FontWeight="SemiBold" Foreground="#94A3B8" Margin="2,0,0,6" />
+                        <Border Background="#0E1420"
+                                BorderBrush="#223047"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="3"
+                                Height="36">
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="TypeProcessRadio"
+                                             GroupName="GoalType"
+                                             Content="Süreç"
+                                             Style="{StaticResource SegmentedTabStyle}"
+                                             Padding="14,4"
+                                             IsChecked="True"
+                                             Checked="GoalType_Checked" />
+                                <RadioButton x:Name="TypeTaskRadio"
+                                             GroupName="GoalType"
+                                             Content="Görev"
+                                             Style="{StaticResource SegmentedTabStyle}"
+                                             Padding="14,4"
+                                             Margin="2,0,0,0"
+                                             Checked="GoalType_Checked" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Weekly Min Duration (Task Only) -->
+                    <StackPanel Grid.Column="4" MinWidth="185">
+                        <TextBlock Text="Haftalık Min. Süre" FontSize="11.5" FontWeight="SemiBold" Foreground="#94A3B8" Margin="2,0,0,6" />
+
+                        <Border x:Name="ProcessNoLimitHint"
+                                Background="#0E1420"
+                                BorderBrush="#1E2A3D"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Height="36"
+                                Padding="12,0"
+                                Visibility="Visible">
+                            <TextBlock Text="Sınır yok (toplam süre)"
+                                       FontSize="12"
+                                       Foreground="#64748B"
+                                       VerticalAlignment="Center" />
+                        </Border>
+
+                        <StackPanel x:Name="TaskDurationPanel" Orientation="Horizontal" Visibility="Collapsed" Height="36">
+                            <TextBox x:Name="WeeklyHoursTextBox"
+                                     Style="{StaticResource DarkTextBoxStyle}"
+                                     Width="56"
+                                     Height="36"
+                                     MaxLength="3"
+                                     Text="5"
+                                     HorizontalContentAlignment="Center"
+                                     PreviewTextInput="NumericOnly_PreviewTextInput"
+                                     PreviewKeyDown="NumericBox_PreviewKeyDown" />
+                            <TextBlock Text="sa" FontSize="12.5" Foreground="#94A3B8" VerticalAlignment="Center" Margin="6,0,12,0" />
+                            <TextBox x:Name="WeeklyMinutesTextBox"
+                                     Style="{StaticResource DarkTextBoxStyle}"
+                                     Width="56"
+                                     Height="36"
+                                     MaxLength="2"
+                                     Text="0"
+                                     HorizontalContentAlignment="Center"
+                                     PreviewTextInput="NumericOnly_PreviewTextInput"
+                                     PreviewKeyDown="NumericBox_PreviewKeyDown" />
+                            <TextBlock Text="dk" FontSize="12.5" Foreground="#94A3B8" VerticalAlignment="Center" Margin="6,0,0,0" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Submit / Cancel Buttons -->
+                    <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Bottom">
+                        <Button x:Name="SaveGoalButton"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Content="Hedef Ekle"
+                                Height="36"
+                                MinWidth="112"
+                                Click="SaveGoalButton_Click" />
+                        <Button x:Name="CancelEditButton"
+                                Style="{StaticResource SubtleButtonStyle}"
+                                Content="İptal"
+                                Height="36"
+                                Margin="8,0,0,0"
+                                Visibility="Collapsed"
+                                Click="CancelEditButton_Click" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Feedback Message -->
+                <TextBlock x:Name="FormFeedbackText"
+                           Grid.Row="2"
+                           FontSize="12"
+                           Margin="2,10,0,0"
+                           Visibility="Collapsed" />
+            </Grid>
+        </Border>
+
+        <!-- Two-Column Lists: Süreç Hedefleri & Görev Hedefleri -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Process Goals -->
+            <Border Grid.Column="0"
+                    Background="{StaticResource BgPanelBrush}"
+                    BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="18">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Süreç Hedefleri" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC" />
+                        <TextBlock x:Name="ProcessCountText" Text="Sınır Yok" FontSize="12" Foreground="#64748B" VerticalAlignment="Center" Grid.Column="1" />
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="ProcessGoalsStack" />
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Right: Task Goals -->
+            <Border Grid.Column="2"
+                    Background="{StaticResource BgPanelBrush}"
+                    BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="18">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Görev Hedefleri" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC" />
+                        <TextBlock x:Name="TaskCountText" Text="Haftalık Min. Süre" FontSize="12" Foreground="#64748B" VerticalAlignment="Center" Grid.Column="1" />
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel x:Name="TaskGoalsStack" />
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

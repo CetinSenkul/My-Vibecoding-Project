@@ -1,0 +1,370 @@
+<UserControl x:Class="TimePlannerApp.Views.AnalyticsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF">
+
+    <Grid x:Name="RootAnalyticsGrid"
+          MouseMove="RootAnalyticsGrid_MouseMove"
+          MouseLeave="RootAnalyticsGrid_MouseLeave">
+
+        <!-- Main Layout -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Top KPI Strip (Hidden in Compact Dashboard Mode) -->
+            <UniformGrid x:Name="KpiStripGrid"
+                         Grid.Row="0"
+                         Columns="4"
+                         Margin="0,0,0,14">
+                <Border Background="{StaticResource BgPanelBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="16,12"
+                        Margin="0,0,6,0">
+                    <StackPanel>
+                        <TextBlock Text="Toplam Çalışma" FontSize="11.5" Foreground="#64748B" />
+                        <TextBlock x:Name="KpiTotalTimeText" Text="0s 0dk" FontSize="20" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{StaticResource BgPanelBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="16,12"
+                        Margin="6,0,6,0">
+                    <StackPanel>
+                        <TextBlock Text="Oturum Sayısı" FontSize="11.5" Foreground="#64748B" />
+                        <TextBlock x:Name="KpiSessionsText" Text="0 oturum" FontSize="20" FontWeight="Bold" Foreground="#5B9BF8" Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{StaticResource BgPanelBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="16,12"
+                        Margin="6,0,6,0">
+                    <StackPanel>
+                        <TextBlock Text="En Çok Çalışılan" FontSize="11.5" Foreground="#64748B" />
+                        <TextBlock x:Name="KpiTopGoalText" Text="—" FontSize="16" FontWeight="Bold" Foreground="#86EFAC" Margin="0,7,0,0" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Border>
+
+                <Border Background="{StaticResource BgPanelBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="16,12"
+                        Margin="6,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Aktif Gün" FontSize="11.5" Foreground="#64748B" />
+                        <TextBlock x:Name="KpiActiveDaysText" Text="0 gün" FontSize="20" FontWeight="Bold" Foreground="#FDE047" Margin="0,4,0,0" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <!-- Time Filter Tabs Bar: Günlük | Haftalık | Aylık | Genel -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource BgPanelBrush}"
+                    BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Padding="6,4"
+                    Margin="0,0,0,10">
+                <UniformGrid Columns="4">
+                    <RadioButton x:Name="FilterDailyRadio"
+                                 Content="Günlük"
+                                 Style="{StaticResource SegmentedTabStyle}"
+                                 Padding="6,5"
+                                 FontSize="12"
+                                 Checked="TimeFilter_Checked"
+                                 Tag="Daily" />
+                    <RadioButton x:Name="FilterWeeklyRadio"
+                                 Content="Haftalık"
+                                 Style="{StaticResource SegmentedTabStyle}"
+                                 Padding="6,5"
+                                 FontSize="12"
+                                 IsChecked="True"
+                                 Checked="TimeFilter_Checked"
+                                 Tag="Weekly" />
+                    <RadioButton x:Name="FilterMonthlyRadio"
+                                 Content="Aylık"
+                                 Style="{StaticResource SegmentedTabStyle}"
+                                 Padding="6,5"
+                                 FontSize="12"
+                                 Checked="TimeFilter_Checked"
+                                 Tag="Monthly" />
+                    <RadioButton x:Name="FilterOverallRadio"
+                                 Content="Genel"
+                                 Style="{StaticResource SegmentedTabStyle}"
+                                 Padding="6,5"
+                                 FontSize="12"
+                                 Checked="TimeFilter_Checked"
+                                 Tag="Overall" />
+                </UniformGrid>
+            </Border>
+
+            <!-- Charts Container -->
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1.15*" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="1*" />
+                </Grid.RowDefinitions>
+
+                <!-- Top Charts Row: Donut (Pie) + Column -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Left: Donut Chart Card -->
+                    <Border Grid.Column="0"
+                            Background="{StaticResource BgPanelBrush}"
+                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="12,10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock x:Name="DonutTitleText"
+                                       Grid.Row="0"
+                                       Text="Daire Grafiği"
+                                       FontSize="12.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="#CBD5E1"
+                                       Margin="0,0,0,4" />
+
+                            <Grid Grid.Row="1">
+                                <lvc:PieChart x:Name="DonutChart"
+                                              TooltipPosition="Hidden"
+                                              LegendPosition="Hidden"
+                                              AnimationsSpeed="0:0:0.45"
+                                              Background="Transparent" />
+
+                                <!-- Center Total Readout -->
+                                <StackPanel x:Name="DonutCenterOverlay"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            IsHitTestVisible="False">
+                                    <TextBlock x:Name="DonutCenterValueText"
+                                               Text="0.0s"
+                                               FontSize="15"
+                                               FontWeight="Bold"
+                                               Foreground="#F8FAFC"
+                                               HorizontalAlignment="Center" />
+                                    <TextBlock x:Name="DonutCenterLabelText"
+                                               Text="Haftalık"
+                                               FontSize="10"
+                                               Foreground="#64748B"
+                                               HorizontalAlignment="Center" />
+                                </StackPanel>
+
+                                <!-- Empty State -->
+                                <TextBlock x:Name="DonutEmptyText"
+                                           Text="Kayıtlı oturum yok"
+                                           FontSize="11.5"
+                                           Foreground="#475569"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Visibility="Collapsed"
+                                           IsHitTestVisible="False" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Right: Column Chart Card -->
+                    <Border Grid.Column="2"
+                            Background="{StaticResource BgPanelBrush}"
+                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="12,10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock x:Name="ColumnTitleText"
+                                       Grid.Row="0"
+                                       Text="Sütun Grafiği"
+                                       FontSize="12.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="#CBD5E1"
+                                       Margin="0,0,0,4" />
+
+                            <Grid Grid.Row="1">
+                                <lvc:CartesianChart x:Name="ColumnChart"
+                                                    TooltipPosition="Hidden"
+                                                    LegendPosition="Hidden"
+                                                    AnimationsSpeed="0:0:0.45"
+                                                    Background="Transparent" />
+
+                                <TextBlock x:Name="ColumnEmptyText"
+                                           Text="Kayıtlı oturum yok"
+                                           FontSize="11.5"
+                                           Foreground="#475569"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Visibility="Collapsed"
+                                           IsHitTestVisible="False" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Bottom Row: Task Scatter / Dot Plot Card -->
+                <Border Grid.Row="2"
+                        Background="{StaticResource BgPanelBrush}"
+                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="12,10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Header + Günlük • Haftalık • Aylık Selector -->
+                        <Grid Grid.Row="0" Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock x:Name="ScatterTitleText"
+                                       Grid.Column="0"
+                                       Text="Görev Grafiği (Nokta Dağılımı)"
+                                       FontSize="12.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="#CBD5E1"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <RadioButton x:Name="ScatterDailyRadio"
+                                             Content="Günlük"
+                                             Style="{StaticResource SegmentedTabStyle}"
+                                             Padding="6,2"
+                                             FontSize="10.5"
+                                             Checked="ScatterPeriod_Checked"
+                                             Tag="Daily" />
+                                <RadioButton x:Name="ScatterWeeklyRadio"
+                                             Content="Haftalık"
+                                             Style="{StaticResource SegmentedTabStyle}"
+                                             Padding="6,2"
+                                             FontSize="10.5"
+                                             Margin="2,0"
+                                             IsChecked="True"
+                                             Checked="ScatterPeriod_Checked"
+                                             Tag="Weekly" />
+                                <RadioButton x:Name="ScatterMonthlyRadio"
+                                             Content="Aylık"
+                                             Style="{StaticResource SegmentedTabStyle}"
+                                             Padding="6,2"
+                                             FontSize="10.5"
+                                             Checked="ScatterPeriod_Checked"
+                                             Tag="Monthly" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="1">
+                            <lvc:CartesianChart x:Name="ScatterChart"
+                                                TooltipPosition="Hidden"
+                                                LegendPosition="Hidden"
+                                                AnimationsSpeed="0:0:0.40"
+                                                Background="Transparent" />
+
+                            <TextBlock x:Name="ScatterEmptyText"
+                                       Text="Nokta dağılımı için en az bir Görev hedefi ekleyin"
+                                       FontSize="11.5"
+                                       Foreground="#475569"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Visibility="Collapsed"
+                                       IsHitTestVisible="False" />
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Game-UI Item-Card Floating Tooltip Overlay -->
+        <Canvas x:Name="TooltipOverlayCanvas"
+                IsHitTestVisible="False"
+                Panel.ZIndex="99">
+            <Border x:Name="RpgTooltipCard"
+                    Visibility="Collapsed"
+                    Background="#F50D1422"
+                    BorderBrush="#FDD835"
+                    BorderThickness="1.4"
+                    CornerRadius="8"
+                    Padding="11,8"
+                    MaxWidth="240">
+                <Border.Effect>
+                    <DropShadowEffect x:Name="RpgTooltipGlow"
+                                      Color="#FDD835"
+                                      BlurRadius="16"
+                                      ShadowDepth="0"
+                                      Opacity="0.55" />
+                </Border.Effect>
+                <StackPanel>
+                    <Grid Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="TooltipTitleText"
+                                   Text="Matematik"
+                                   FontSize="12.5"
+                                   FontWeight="Bold"
+                                   Foreground="#FDE047"
+                                   TextTrimming="CharacterEllipsis" />
+                        <Border x:Name="TooltipBadgeBorder"
+                                Grid.Column="1"
+                                Background="#1D2B44"
+                                BorderBrush="#3B6CB7"
+                                BorderThickness="1"
+                                CornerRadius="4"
+                                Padding="5,1"
+                                Margin="8,0,0,0">
+                            <TextBlock x:Name="TooltipBadgeText"
+                                       Text="GÖREV"
+                                       FontSize="9"
+                                       FontWeight="Bold"
+                                       Foreground="#BFDBFE" />
+                        </Border>
+                    </Grid>
+
+                    <TextBlock x:Name="TooltipPrimaryStatText"
+                               Text="4.0 Saat (%80)"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="#F8FAFC" />
+
+                    <TextBlock x:Name="TooltipSecondaryStatText"
+                               Text="Hedef: 5.0 Saat • Pay: %34"
+                               FontSize="11"
+                               Foreground="#94A3B8"
+                               Margin="0,2,0,0" />
+                </StackPanel>
+            </Border>
+        </Canvas>
+    </Grid>
+</UserControl>
