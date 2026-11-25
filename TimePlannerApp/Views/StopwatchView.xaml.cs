@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using TimePlannerApp.Models;
+using TimePlannerApp.Services;
 
 namespace TimePlannerApp.Views;
 
@@ -44,10 +45,11 @@ public partial class StopwatchView : UserControl
 
         if (sessions.Count == 0)
         {
+            var p = ThemeService.CurrentPalette;
             TodaySessionsStack.Children.Add(new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(0x0E, 0x14, 0x20)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(0x1E, 0x2A, 0x3D)),
+                Background = ThemeService.Brush(p.BgInput),
+                BorderBrush = ThemeService.Brush(p.BorderSubtle),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(10),
                 Padding = new Thickness(20, 32, 20, 32),
@@ -55,7 +57,7 @@ public partial class StopwatchView : UserControl
                 {
                     Text = "Bugün henüz kaydedilmiş bir çalışma oturumu yok.\nSoldaki kronometreyi başlatıp kaydettiğinizde burada listelenir.",
                     FontSize = 12.5,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B)),
+                    Foreground = ThemeService.Brush(p.TextSecondary),
                     TextAlignment = TextAlignment.Center,
                     TextWrapping = TextWrapping.Wrap
                 }
@@ -72,11 +74,12 @@ public partial class StopwatchView : UserControl
 
     private Border CreateSessionRow(WorkSessionDetail session)
     {
+        var p = ThemeService.CurrentPalette;
         var isTask = session.GoalType == "Task";
         var card = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x14, 0x1D, 0x2D)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x23, 0x32, 0x4B)),
+            Background = ThemeService.Brush(p.BgCard),
+            BorderBrush = ThemeService.Brush(p.BorderSubtle),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(10),
             Padding = new Thickness(14, 11, 14, 11),
@@ -95,7 +98,7 @@ public partial class StopwatchView : UserControl
             Text = session.GoalTitle,
             FontSize = 13.5,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xF1, 0xF5, 0xF9))
+            Foreground = ThemeService.Brush(p.TextPrimary)
         });
 
         var typePill = new Border

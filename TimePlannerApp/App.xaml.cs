@@ -20,6 +20,7 @@ public partial class App : Application
         Database.Initialize();
 
         Stopwatch = new StopwatchService();
+        ThemeService.LoadSavedTheme();
 
         base.OnStartup(e);
     }

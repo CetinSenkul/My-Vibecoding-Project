@@ -17,6 +17,8 @@ public class Goal
 
     public string CreatedAt { get; set; } = string.Empty;
     public bool IsArchived { get; set; }
+    public bool IsCompleted { get; set; }
+    public string? CompletedAt { get; set; }
 }
 
 public class GoalSummary

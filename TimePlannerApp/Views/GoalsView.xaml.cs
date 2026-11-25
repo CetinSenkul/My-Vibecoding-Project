@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -60,14 +61,47 @@ public partial class GoalsView : UserControl
                 TaskGoalsStack.Children.Add(CreateTaskGoalCard(item));
             }
         }
+
+        // Tamamlanan hedefler ayrı bölmesi
+        var completedGoals = App.Database.GetCompletedGoalSummaries(DateTime.Today);
+        CompletedCountText.Text = $"{completedGoals.Count} tamamlandı";
+        CompletedGoalsStack.Children.Clear();
+
+        if (completedGoals.Count == 0)
+        {
+            var p = ThemeService.CurrentPalette;
+            CompletedGoalsStack.Children.Add(new Border
+            {
+                Background = ThemeService.Brush(p.BgInput),
+                BorderBrush = ThemeService.Brush(p.BorderSubtle),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(14, 12, 14, 12),
+                Child = new TextBlock
+                {
+                    Text = "Henüz tamamlanan hedef yok. Aktif bir hedefte '✓ Tamamla' butonuna bastığınızda buraya taşınır.",
+                    FontSize = 12,
+                    Foreground = ThemeService.Brush(p.TextSecondary),
+                    TextAlignment = TextAlignment.Center
+                }
+            });
+        }
+        else
+        {
+            foreach (var item in completedGoals)
+            {
+                CompletedGoalsStack.Children.Add(CreateCompletedGoalCard(item));
+            }
+        }
     }
 
     private Border CreateProcessGoalCard(GoalSummary summary)
     {
+        var p = ThemeService.CurrentPalette;
         var card = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x14, 0x1D, 0x2D)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x23, 0x32, 0x4B)),
+            Background = ThemeService.Brush(p.BgCard),
+            BorderBrush = ThemeService.Brush(p.BorderSubtle),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(10),
             Padding = new Thickness(14, 12, 14, 12),
@@ -85,14 +119,14 @@ public partial class GoalsView : UserControl
             Text = summary.Goal.Title,
             FontSize = 14,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xF1, 0xF5, 0xF9)),
+            Foreground = ThemeService.Brush(p.TextPrimary),
             TextTrimming = TextTrimming.CharacterEllipsis
         });
         infoStack.Children.Add(new TextBlock
         {
             Text = $"Toplam {summary.TotalSessionCount} oturum",
             FontSize = 11.5,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B)),
+            Foreground = ThemeService.Brush(p.TextSecondary),
             Margin = new Thickness(0, 3, 0, 0)
         });
         Grid.SetColumn(infoStack, 0);
@@ -108,8 +142,8 @@ public partial class GoalsView : UserControl
 
         var durationPill = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x16, 0x2B, 0x4A)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x2B, 0x56, 0x94)),
+            Background = ThemeService.Brush(p.AccentSurface),
+            BorderBrush = ThemeService.Brush(p.BorderActive),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(7),
             Padding = new Thickness(10, 5, 10, 5),
@@ -120,9 +154,21 @@ public partial class GoalsView : UserControl
             Text = FormatDurationShort(summary.TotalDurationSeconds),
             FontSize = 12,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD))
+            Foreground = ThemeService.Brush(p.AccentText)
         };
         rightStack.Children.Add(durationPill);
+
+        var completeBtn = new Button
+        {
+            Content = "✓ Tamamla",
+            Style = (Style)FindResource("SuccessButtonStyle"),
+            Padding = new Thickness(9, 4, 9, 4),
+            FontSize = 11.5,
+            Margin = new Thickness(0, 0, 6, 0),
+            ToolTip = "Hedefi tamamlandı olarak işaretle (istatistiklerde korunur)"
+        };
+        completeBtn.Click += (_, _) => MarkGoalCompleted(summary.Goal, completed: true);
+        rightStack.Children.Add(completeBtn);
 
         var editBtn = new Button
         {
@@ -190,7 +236,7 @@ public partial class GoalsView : UserControl
             Text = summary.Goal.Title,
             FontSize = 14,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC)),
+            Foreground = ThemeService.Brush(ThemeService.CurrentPalette.TextPrimary),
             TextTrimming = TextTrimming.CharacterEllipsis
         });
         titleStack.Children.Add(new TextBlock
@@ -200,7 +246,7 @@ public partial class GoalsView : UserControl
             FontWeight = FontWeights.SemiBold,
             Foreground = hasWork
                 ? colorInfo.CreateAccentTextBrush()
-                : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8)),
+                : ThemeService.Brush(ThemeService.CurrentPalette.TextSecondary),
             Margin = new Thickness(0, 2, 0, 0)
         });
         Grid.SetColumn(titleStack, 0);
@@ -212,6 +258,18 @@ public partial class GoalsView : UserControl
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(10, 0, 0, 0)
         };
+
+        var completeBtn = new Button
+        {
+            Content = "✓ Tamamla",
+            Style = (Style)FindResource("SuccessButtonStyle"),
+            Padding = new Thickness(9, 4, 9, 4),
+            FontSize = 11.5,
+            Margin = new Thickness(0, 0, 6, 0),
+            ToolTip = "Hedefi tamamlandı olarak işaretle (istatistiklerde korunur)"
+        };
+        completeBtn.Click += (_, _) => MarkGoalCompleted(summary.Goal, completed: true);
+        actionsStack.Children.Add(completeBtn);
 
         var editBtn = new Button
         {
@@ -288,12 +346,158 @@ public partial class GoalsView : UserControl
         return card;
     }
 
+    private Border CreateCompletedGoalCard(GoalSummary summary)
+    {
+        var p = ThemeService.CurrentPalette;
+        var isTask = summary.Goal.Type == "Task";
+
+        var card = new Border
+        {
+            Background = ThemeService.Brush(p.BgCard),
+            BorderBrush = new SolidColorBrush(Color.FromArgb(0x88, 0x43, 0xA0, 0x47)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(9),
+            Padding = new Thickness(12, 9, 12, 9),
+            Margin = new Thickness(0, 0, 0, 7)
+        };
+
+        var grid = new Grid();
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var left = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+
+        var titleRow = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        titleRow.Children.Add(new TextBlock
+        {
+            Text = "✓",
+            FontSize = 13,
+            FontWeight = FontWeights.Bold,
+            Foreground = new SolidColorBrush(Color.FromRgb(0x43, 0xA0, 0x47)),
+            Margin = new Thickness(0, 0, 7, 0),
+            VerticalAlignment = VerticalAlignment.Center
+        });
+        titleRow.Children.Add(new TextBlock
+        {
+            Text = summary.Goal.Title,
+            FontSize = 13.5,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = ThemeService.Brush(p.TextPrimary),
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            VerticalAlignment = VerticalAlignment.Center
+        });
+        titleRow.Children.Add(new Border
+        {
+            Background = ThemeService.Brush(p.AccentSurface),
+            BorderBrush = ThemeService.Brush(p.BorderSubtle),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(4),
+            Padding = new Thickness(6, 1, 6, 1),
+            Margin = new Thickness(8, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            Child = new TextBlock
+            {
+                Text = isTask ? "Görev" : "Süreç",
+                FontSize = 10,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = ThemeService.Brush(p.AccentText)
+            }
+        });
+        left.Children.Add(titleRow);
+
+        var completedDateLabel = FormatCompletedDate(summary.Goal.CompletedAt);
+        left.Children.Add(new TextBlock
+        {
+            Text = $"Tamamlandı: {completedDateLabel}  •  Toplam {summary.TotalSessionCount} oturum ({FormatDurationShort(summary.TotalDurationSeconds)})",
+            FontSize = 11,
+            Foreground = ThemeService.Brush(p.TextSecondary),
+            Margin = new Thickness(19, 2, 0, 0)
+        });
+
+        Grid.SetColumn(left, 0);
+        grid.Children.Add(left);
+
+        var right = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(10, 0, 0, 0)
+        };
+
+        var restoreBtn = new Button
+        {
+            Content = "Geri Al",
+            Style = (Style)FindResource("SubtleButtonStyle"),
+            Padding = new Thickness(9, 4, 9, 4),
+            FontSize = 11.5,
+            Margin = new Thickness(0, 0, 6, 0),
+            ToolTip = "Hedefi tekrar aktif hedeflere taşı"
+        };
+        restoreBtn.Click += (_, _) => MarkGoalCompleted(summary.Goal, completed: false);
+        right.Children.Add(restoreBtn);
+
+        var deleteBtn = new Button
+        {
+            Content = "Sil",
+            Style = (Style)FindResource("DangerButtonStyle"),
+            Padding = new Thickness(9, 4, 9, 4),
+            FontSize = 11.5
+        };
+        deleteBtn.Click += (_, _) => ConfirmAndDeleteGoal(summary.Goal);
+        right.Children.Add(deleteBtn);
+
+        Grid.SetColumn(right, 1);
+        grid.Children.Add(right);
+
+        card.Child = grid;
+        return card;
+    }
+
+    private void MarkGoalCompleted(Goal goal, bool completed)
+    {
+        if (completed &&
+            App.Stopwatch != null &&
+            App.Stopwatch.State != StopwatchState.Idle &&
+            App.Stopwatch.ActiveGoal?.Id == goal.Id)
+        {
+            ShowFeedback($"\"{goal.Title}\" için kronometre şu anda çalışıyor. Önce kronometreyi kaydedin veya sıfırlayın.", isError: true);
+            return;
+        }
+
+        App.Database.SetGoalCompleted(goal.Id, completed);
+        if (completed && _editingGoalId == goal.Id)
+        {
+            ResetForm();
+        }
+
+        ShowFeedback(
+            completed
+                ? $"\"{goal.Title}\" tamamlandı olarak işaretlendi ve Tamamlanan Hedefler bölmesine taşındı."
+                : $"\"{goal.Title}\" tekrar aktif hedeflere geri alındı.",
+            isError: false);
+
+        RefreshGoals();
+        GoalsChanged?.Invoke();
+    }
+
+    private static string FormatCompletedDate(string? completedAt)
+    {
+        if (!string.IsNullOrWhiteSpace(completedAt) &&
+            DateTime.TryParseExact(completedAt, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dt))
+        {
+            return dt.ToString("d MMM yyyy", new CultureInfo("tr-TR"));
+        }
+
+        return "Bugün";
+    }
+
     private static Border CreateEmptyState(string message)
     {
+        var p = ThemeService.CurrentPalette;
         return new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x0E, 0x14, 0x20)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x1E, 0x2A, 0x3D)),
+            Background = ThemeService.Brush(p.BgInput),
+            BorderBrush = ThemeService.Brush(p.BorderSubtle),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(10),
             Padding = new Thickness(20, 28, 20, 28),
@@ -301,7 +505,7 @@ public partial class GoalsView : UserControl
             {
                 Text = message,
                 FontSize = 12.5,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B)),
+                Foreground = ThemeService.Brush(p.TextSecondary),
                 TextAlignment = TextAlignment.Center,
                 TextWrapping = TextWrapping.Wrap
             }

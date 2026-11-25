@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using TimePlannerApp.Services;
 
 namespace TimePlannerApp.Views;
 
@@ -16,7 +17,6 @@ public partial class SettingsView : UserControl
         public TextBlock SummaryText { get; init; } = null!;
     }
 
-    // Arayüzde Pazartesi (1) -> Pazar (0) sıralaması
     private static readonly (int DayOfWeek, string Name)[] OrderedDays =
     [
         (1, "Pazartesi"),
@@ -36,7 +36,58 @@ public partial class SettingsView : UserControl
     public SettingsView()
     {
         InitializeComponent();
-        Loaded += (_, _) => LoadTargets();
+        Loaded += (_, _) =>
+        {
+            LoadTargets();
+            SyncSelectedThemeCard();
+        };
+    }
+
+    public void SyncSelectedThemeCard()
+    {
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        var mode = ThemeService.CurrentMode;
+        var p = ThemeService.CurrentPalette;
+        ActiveThemeStatusText.Text = $"Aktif: {ThemeService.GetModeDisplayName(mode)}";
+
+        var cards = new[]
+        {
+            (ThemeCardDark, AppThemeMode.Dark),
+            (ThemeCardLight, AppThemeMode.Light),
+            (ThemeCardSpace, AppThemeMode.Space),
+            (ThemeCardSeasons, AppThemeMode.Seasons)
+        };
+
+        foreach (var (card, cardMode) in cards)
+        {
+            var isSelected = cardMode == mode;
+            card.BorderBrush = isSelected
+                ? ThemeService.Brush(p.Accent)
+                : ThemeService.Brush(p.BorderSubtle);
+            card.Background = isSelected
+                ? ThemeService.Brush(p.NavActiveBg)
+                : ThemeService.Brush(p.BgCard);
+        }
+
+        // Gün satırlarını yeni temayla yeniden boya
+        if (_rows.Count > 0)
+        {
+            LoadTargets();
+        }
+    }
+
+    private void ThemeCard_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is Border border &&
+            border.Tag is string tag &&
+            Enum.TryParse<AppThemeMode>(tag, out var mode))
+        {
+            ThemeService.ApplyTheme(mode, persist: true);
+        }
     }
 
     public void LoadTargets()
@@ -49,6 +100,7 @@ public partial class SettingsView : UserControl
         _isLoading = true;
         var targets = App.Database.GetDailyTargets();
         var todayDow = (int)DateTime.Today.DayOfWeek;
+        var p = ThemeService.CurrentPalette;
 
         DaysListPanel.Children.Clear();
         _rows.Clear();
@@ -60,29 +112,26 @@ public partial class SettingsView : UserControl
 
             var rowCard = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(0x14, 0x1D, 0x2D)),
-                BorderBrush = isToday
-                    ? new SolidColorBrush(Color.FromRgb(0x3B, 0x6C, 0xB7))
-                    : new SolidColorBrush(Color.FromRgb(0x21, 0x2E, 0x45)),
+                Background = ThemeService.Brush(p.BgCard),
+                BorderBrush = isToday ? ThemeService.Brush(p.BorderActive) : ThemeService.Brush(p.BorderSubtle),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(10),
-                Padding = new Thickness(16, 11, 16, 11),
-                Margin = new Thickness(0, 0, 0, 9)
+                Padding = new Thickness(16, 10, 16, 10),
+                Margin = new Thickness(0, 0, 0, 8)
             };
 
             var grid = new Grid();
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(170) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(175) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            // Day Name + Today badge
             var dayStack = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
             dayStack.Children.Add(new TextBlock
             {
                 Text = name,
                 FontSize = 14,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(0xF1, 0xF5, 0xF9)),
+                Foreground = ThemeService.Brush(p.TextPrimary),
                 VerticalAlignment = VerticalAlignment.Center
             });
 
@@ -90,8 +139,8 @@ public partial class SettingsView : UserControl
             {
                 var badge = new Border
                 {
-                    Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x3A, 0x5F)),
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(0x5B, 0x9B, 0xF8)),
+                    Background = ThemeService.Brush(p.AccentSurface),
+                    BorderBrush = ThemeService.Brush(p.Accent),
                     BorderThickness = new Thickness(1),
                     CornerRadius = new CornerRadius(4),
                     Padding = new Thickness(6, 1, 6, 1),
@@ -103,14 +152,13 @@ public partial class SettingsView : UserControl
                     Text = "Bugün",
                     FontSize = 10,
                     FontWeight = FontWeights.SemiBold,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0xBF, 0xDB, 0xFE))
+                    Foreground = ThemeService.Brush(p.AccentText)
                 };
                 dayStack.Children.Add(badge);
             }
             Grid.SetColumn(dayStack, 0);
             grid.Children.Add(dayStack);
 
-            // Stepper + Hours/Minutes Inputs
             var controlsStack = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
@@ -163,20 +211,19 @@ public partial class SettingsView : UserControl
 
             controlsStack.Children.Add(minusBtn);
             controlsStack.Children.Add(hoursBox);
-            controlsStack.Children.Add(new TextBlock { Text = "sa", FontSize = 12, Foreground = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8)), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 10, 0) });
+            controlsStack.Children.Add(new TextBlock { Text = "sa", FontSize = 12, Foreground = ThemeService.Brush(p.TextSecondary), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 10, 0) });
             controlsStack.Children.Add(minutesBox);
-            controlsStack.Children.Add(new TextBlock { Text = "dk", FontSize = 12, Foreground = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8)), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 0, 0) });
+            controlsStack.Children.Add(new TextBlock { Text = "dk", FontSize = 12, Foreground = ThemeService.Brush(p.TextSecondary), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 0, 0) });
             controlsStack.Children.Add(plusBtn);
 
             Grid.SetColumn(controlsStack, 1);
             grid.Children.Add(controlsStack);
 
-            // Right formatted summary
             var summaryText = new TextBlock
             {
                 FontSize = 13,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD)),
+                Foreground = ThemeService.Brush(p.AccentText),
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Center
             };
@@ -246,7 +293,6 @@ public partial class SettingsView : UserControl
         foreach (var row in _rows)
         {
             var mins = ReadRowMinutes(row);
-            // normalize display if user typed e.g. 90 mins
             row.HoursBox.Text = (mins / 60).ToString();
             row.MinutesBox.Text = (mins % 60).ToString();
             dict[row.DayOfWeek] = mins;
@@ -255,7 +301,7 @@ public partial class SettingsView : UserControl
         App.Database.SaveDailyTargets(dict);
 
         SettingsFeedbackText.Text = "Günlük saat hedefleri SQLite veritabanına kaydedildi.";
-        SettingsFeedbackText.Foreground = new SolidColorBrush(Color.FromRgb(0x6E, 0xE7, 0xB7));
+        SettingsFeedbackText.Foreground = new SolidColorBrush(Color.FromRgb(0x43, 0xA0, 0x47));
         SettingsFeedbackText.Visibility = Visibility.Visible;
 
         TargetsChanged?.Invoke();
@@ -270,7 +316,7 @@ public partial class SettingsView : UserControl
         }
 
         SettingsFeedbackText.Text = "Tüm günler 2 saat olarak ayarlandı. Kalıcı olması için 'Ayarları Kaydet' butonuna basın.";
-        SettingsFeedbackText.Foreground = new SolidColorBrush(Color.FromRgb(0xFD, 0xE0, 0x47));
+        SettingsFeedbackText.Foreground = new SolidColorBrush(Color.FromRgb(0xEA, 0x76, 0x00));
         SettingsFeedbackText.Visibility = Visibility.Visible;
     }
 

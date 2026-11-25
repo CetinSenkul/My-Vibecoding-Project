@@ -146,6 +146,7 @@ public partial class AnalyticsView : UserControl
 
         var innerRadius = _isCompactMode ? 32 : 68;
         var pushout = _isCompactMode ? 6 : 11;
+        var panelBgSk = ToSkColor(ThemeService.CurrentPalette.BgPanel);
         var seriesList = new List<ISeries>();
 
         foreach (var item in snapshot.Items)
@@ -165,7 +166,7 @@ public partial class AnalyticsView : UserControl
                 InnerRadius = innerRadius,
                 HoverPushout = pushout,
                 Fill = normalFill,
-                Stroke = new SolidColorPaint(new SKColor(0x13, 0x1A, 0x27)) { StrokeThickness = 2 },
+                Stroke = new SolidColorPaint(panelBgSk) { StrokeThickness = 2 },
                 DataLabelsPaint = null,
                 IsHoverable = true
             };
@@ -277,8 +278,9 @@ public partial class AnalyticsView : UserControl
 
         ColumnChart.Series = [columnSeries];
 
-        var labelPaint = new SolidColorPaint(new SKColor(0x94, 0xA3, 0xB8));
-        var separatorPaint = new SolidColorPaint(new SKColor(0x1E, 0x29, 0x3B)) { StrokeThickness = 1 };
+        var p = ThemeService.CurrentPalette;
+        var labelPaint = new SolidColorPaint(ToSkColor(p.ChartLabel));
+        var separatorPaint = new SolidColorPaint(ToSkColor(p.ChartSeparator)) { StrokeThickness = 1 };
 
         ColumnChart.XAxes =
         [
@@ -427,8 +429,9 @@ public partial class AnalyticsView : UserControl
 
         ScatterChart.Series = seriesList;
 
-        var labelPaint = new SolidColorPaint(new SKColor(0x94, 0xA3, 0xB8));
-        var gridPaint = new SolidColorPaint(new SKColor(0x1B, 0x25, 0x36)) { StrokeThickness = 1 };
+        var p = ThemeService.CurrentPalette;
+        var labelPaint = new SolidColorPaint(ToSkColor(p.ChartLabel));
+        var gridPaint = new SolidColorPaint(ToSkColor(p.ChartSeparator)) { StrokeThickness = 1 };
 
         ScatterChart.XAxes =
         [
@@ -522,9 +525,27 @@ public partial class AnalyticsView : UserControl
 
     private void ShowScatterRpgTooltip(TaskScatterPointInfo info, string periodLabel)
     {
+        var p = ThemeService.CurrentPalette;
+        if (info.IsDayOff)
+        {
+            var offBorder = ThemeService.Brush(p.DayOffBorder);
+            RpgTooltipCard.BorderBrush = offBorder;
+            RpgTooltipGlow.Color = p.DayOffBorder;
+            TooltipTitleText.Text = info.GoalTitle;
+            TooltipTitleText.Foreground = ThemeService.Brush(p.TextPrimary);
+            TooltipBadgeText.Text = "İZİNLİ";
+            TooltipBadgeBorder.BorderBrush = offBorder;
+            TooltipPrimaryStatText.Text = $"{info.BucketLabel}: İzinli ({info.DayOffReason})";
+            TooltipSecondaryStatText.Text = $"{periodLabel} • Hedef Muaf";
+            _tooltipActive = true;
+            RpgTooltipCard.Visibility = Visibility.Visible;
+            PositionTooltip(_lastPointerPos);
+            return;
+        }
+
         var colorInfo = ColorScaleService.GetColorInfo(info.Tier);
         var accent = info.Tier == PerformanceTier.Zero
-            ? Color.FromRgb(0x64, 0x74, 0x8B)
+            ? p.TextSecondary
             : colorInfo.PrimaryColor;
         var accentBrush = new SolidColorBrush(accent);
 
@@ -533,7 +554,7 @@ public partial class AnalyticsView : UserControl
 
         TooltipTitleText.Text = info.GoalTitle;
         TooltipTitleText.Foreground = info.Tier == PerformanceTier.Zero
-            ? new SolidColorBrush(Color.FromRgb(0xCB, 0xD5, 0xE1))
+            ? ThemeService.Brush(p.TextPrimary)
             : colorInfo.CreateAccentTextBrush();
 
         TooltipBadgeText.Text = info.BucketLabel.ToUpperInvariant();

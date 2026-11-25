@@ -121,6 +121,11 @@ public static class ColorScaleService
 
     public static PerformanceColorInfo GetColorInfo(PerformanceTier tier)
     {
+        if (ThemeService.IsLightTheme)
+        {
+            return GetLightThemeColorInfo(tier);
+        }
+
         return tier switch
         {
             PerformanceTier.Red => new PerformanceColorInfo
@@ -189,8 +194,87 @@ public static class ColorScaleService
                 TierLabel = "Siyah (%0)",
                 PrimaryHex = "#121212",
                 PrimaryColor = Color.FromRgb(0x12, 0x12, 0x12),
-                SurfaceColor = Color.FromRgb(0x12, 0x12, 0x12),
-                BorderColor = Color.FromRgb(0x28, 0x33, 0x47),
+                SurfaceColor = ThemeService.CurrentPalette.BgCellZero,
+                BorderColor = ThemeService.CurrentPalette.BorderCellZero,
+                AccentTextColor = ThemeService.CurrentPalette.TextSecondary,
+                GlowBlurRadius = 0,
+                GlowOpacity = 0
+            }
+        };
+    }
+
+    private static PerformanceColorInfo GetLightThemeColorInfo(PerformanceTier tier)
+    {
+        return tier switch
+        {
+            PerformanceTier.Red => new PerformanceColorInfo
+            {
+                Tier = PerformanceTier.Red,
+                TierLabel = "Kırmızı (%1–%50)",
+                PrimaryHex = "#E53935",
+                PrimaryColor = Color.FromRgb(0xE5, 0x39, 0x35),
+                SurfaceColor = Color.FromRgb(0xFE, 0xE2, 0xE2),
+                BorderColor = Color.FromRgb(0xE5, 0x39, 0x35),
+                AccentTextColor = Color.FromRgb(0xB9, 0x1C, 0x1C),
+                GlowBlurRadius = 10,
+                GlowOpacity = 0.28
+            },
+            PerformanceTier.Orange => new PerformanceColorInfo
+            {
+                Tier = PerformanceTier.Orange,
+                TierLabel = "Turuncu (%50–%70)",
+                PrimaryHex = "#FB8C00",
+                PrimaryColor = Color.FromRgb(0xFB, 0x8C, 0x00),
+                SurfaceColor = Color.FromRgb(0xFF, 0xED, 0xD5),
+                BorderColor = Color.FromRgb(0xEA, 0x76, 0x00),
+                AccentTextColor = Color.FromRgb(0xC2, 0x41, 0x0C),
+                GlowBlurRadius = 10,
+                GlowOpacity = 0.28
+            },
+            PerformanceTier.Yellow => new PerformanceColorInfo
+            {
+                Tier = PerformanceTier.Yellow,
+                TierLabel = "Sarı (%70–%90)",
+                PrimaryHex = "#FDD835",
+                PrimaryColor = Color.FromRgb(0xE5, 0xB8, 0x00),
+                SurfaceColor = Color.FromRgb(0xFE, 0xF9, 0xC3),
+                BorderColor = Color.FromRgb(0xCA, 0x8A, 0x04),
+                AccentTextColor = Color.FromRgb(0x85, 0x4D, 0x0E),
+                GlowBlurRadius = 10,
+                GlowOpacity = 0.30
+            },
+            PerformanceTier.Green => new PerformanceColorInfo
+            {
+                Tier = PerformanceTier.Green,
+                TierLabel = "Yeşil (%90–%110)",
+                PrimaryHex = "#43A047",
+                PrimaryColor = Color.FromRgb(0x43, 0xA0, 0x47),
+                SurfaceColor = Color.FromRgb(0xDC, 0xFC, 0xE7),
+                BorderColor = Color.FromRgb(0x2E, 0x8B, 0x38),
+                AccentTextColor = Color.FromRgb(0x16, 0x65, 0x34),
+                GlowBlurRadius = 12,
+                GlowOpacity = 0.32
+            },
+            PerformanceTier.Blue => new PerformanceColorInfo
+            {
+                Tier = PerformanceTier.Blue,
+                TierLabel = "Mavi (%110+)",
+                PrimaryHex = "#1E88E5",
+                PrimaryColor = Color.FromRgb(0x1E, 0x88, 0xE5),
+                SurfaceColor = Color.FromRgb(0xDB, 0xEA, 0xFE),
+                BorderColor = Color.FromRgb(0x1E, 0x88, 0xE5),
+                AccentTextColor = Color.FromRgb(0x1E, 0x40, 0xAF),
+                GlowBlurRadius = 14,
+                GlowOpacity = 0.36
+            },
+            _ => new PerformanceColorInfo
+            {
+                Tier = PerformanceTier.Zero,
+                TierLabel = "Siyah (%0)",
+                PrimaryHex = "#121212",
+                PrimaryColor = Color.FromRgb(0x12, 0x12, 0x12),
+                SurfaceColor = Color.FromRgb(0xF1, 0xF5, 0xF9),
+                BorderColor = Color.FromRgb(0xCB, 0xD5, 0xE1),
                 AccentTextColor = Color.FromRgb(0x64, 0x74, 0x8B),
                 GlowBlurRadius = 0,
                 GlowOpacity = 0

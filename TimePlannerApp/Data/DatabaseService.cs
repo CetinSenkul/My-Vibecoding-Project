@@ -47,7 +47,9 @@ public class DatabaseService
                 Type TEXT NOT NULL CHECK (Type IN ('Process', 'Task')),
                 WeeklyMinMinutes INTEGER DEFAULT 0,
                 CreatedAt TEXT NOT NULL,
-                IsArchived INTEGER NOT NULL DEFAULT 0
+                IsArchived INTEGER NOT NULL DEFAULT 0,
+                IsCompleted INTEGER NOT NULL DEFAULT 0,
+                CompletedAt TEXT
             );
 
             CREATE TABLE IF NOT EXISTS WorkSessions (
@@ -58,6 +60,17 @@ public class DatabaseService
                 EndTime TEXT NOT NULL,
                 DurationSeconds INTEGER NOT NULL,
                 FOREIGN KEY (GoalId) REFERENCES Goals(Id)
+            );
+
+            CREATE TABLE IF NOT EXISTS DayOffs (
+                Date TEXT PRIMARY KEY,
+                Reason TEXT NOT NULL,
+                CreatedAt TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS AppSettings (
+                Key TEXT PRIMARY KEY,
+                Value TEXT NOT NULL
             );
             """;
         cmd.ExecuteNonQuery();
@@ -75,6 +88,36 @@ public class DatabaseService
                 (6, 120);
             """;
         seedCmd.ExecuteNonQuery();
+
+        EnsureGoalCompletionColumns(connection);
+    }
+
+    private static void EnsureGoalCompletionColumns(SqliteConnection connection)
+    {
+        var existingCols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        using (var infoCmd = connection.CreateCommand())
+        {
+            infoCmd.CommandText = "PRAGMA table_info(Goals);";
+            using var reader = infoCmd.ExecuteReader();
+            while (reader.Read())
+            {
+                existingCols.Add(reader.GetString(1));
+            }
+        }
+
+        if (!existingCols.Contains("IsCompleted"))
+        {
+            using var alter1 = connection.CreateCommand();
+            alter1.CommandText = "ALTER TABLE Goals ADD COLUMN IsCompleted INTEGER NOT NULL DEFAULT 0;";
+            alter1.ExecuteNonQuery();
+        }
+
+        if (!existingCols.Contains("CompletedAt"))
+        {
+            using var alter2 = connection.CreateCommand();
+            alter2.CommandText = "ALTER TABLE Goals ADD COLUMN CompletedAt TEXT;";
+            alter2.ExecuteNonQuery();
+        }
     }
 
     #region DailyTargets
@@ -147,30 +190,32 @@ public class DatabaseService
         using var connection = CreateConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
-            SELECT Id, Title, Type, WeeklyMinMinutes, CreatedAt, IsArchived
+            SELECT Id, Title, Type, WeeklyMinMinutes, CreatedAt, IsArchived, IsCompleted, CompletedAt
             FROM Goals
-            WHERE IsArchived = 0
+            WHERE IsArchived = 0 AND IsCompleted = 0
             ORDER BY Type ASC, Id DESC;
             """;
 
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
-            list.Add(new Goal
-            {
-                Id = reader.GetInt32(0),
-                Title = reader.GetString(1),
-                Type = reader.GetString(2),
-                WeeklyMinMinutes = reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
-                CreatedAt = reader.GetString(4),
-                IsArchived = reader.GetInt32(5) == 1
-            });
+            list.Add(ReadGoal(reader));
         }
 
         return list;
     }
 
     public List<GoalSummary> GetActiveGoalSummaries(DateTime? referenceDate = null)
+    {
+        return GetGoalSummariesByCompletion(isCompleted: false, referenceDate);
+    }
+
+    public List<GoalSummary> GetCompletedGoalSummaries(DateTime? referenceDate = null)
+    {
+        return GetGoalSummariesByCompletion(isCompleted: true, referenceDate);
+    }
+
+    private List<GoalSummary> GetGoalSummariesByCompletion(bool isCompleted, DateTime? referenceDate = null)
     {
         var refDate = (referenceDate ?? DateTime.Today).Date;
         var diffFromMonday = ((int)refDate.DayOfWeek + 6) % 7;
@@ -180,25 +225,35 @@ public class DatabaseService
         var list = new List<GoalSummary>();
         using var connection = CreateConnection();
         using var cmd = connection.CreateCommand();
-        cmd.CommandText = """
-            SELECT
-                g.Id,
-                g.Title,
-                g.Type,
-                g.WeeklyMinMinutes,
-                g.CreatedAt,
-                g.IsArchived,
-                COUNT(ws.Id) AS TotalSessions,
-                COALESCE(SUM(ws.DurationSeconds), 0) AS TotalSeconds,
-                COALESCE(SUM(CASE
-                    WHEN ws.SessionDate >= @weekStart AND ws.SessionDate <= @weekEnd
-                    THEN ws.DurationSeconds ELSE 0 END), 0) AS WeeklySeconds
-            FROM Goals g
-            LEFT JOIN WorkSessions ws ON ws.GoalId = g.Id
-            WHERE g.IsArchived = 0
-            GROUP BY g.Id, g.Title, g.Type, g.WeeklyMinMinutes, g.CreatedAt, g.IsArchived
-            ORDER BY g.Id DESC;
-            """;
+        cmd.CommandText = isCompleted
+            ? """
+                SELECT
+                    g.Id, g.Title, g.Type, g.WeeklyMinMinutes, g.CreatedAt, g.IsArchived, g.IsCompleted, g.CompletedAt,
+                    COUNT(ws.Id) AS TotalSessions,
+                    COALESCE(SUM(ws.DurationSeconds), 0) AS TotalSeconds,
+                    COALESCE(SUM(CASE
+                        WHEN ws.SessionDate >= @weekStart AND ws.SessionDate <= @weekEnd
+                        THEN ws.DurationSeconds ELSE 0 END), 0) AS WeeklySeconds
+                FROM Goals g
+                LEFT JOIN WorkSessions ws ON ws.GoalId = g.Id
+                WHERE g.IsArchived = 0 AND g.IsCompleted = 1
+                GROUP BY g.Id, g.Title, g.Type, g.WeeklyMinMinutes, g.CreatedAt, g.IsArchived, g.IsCompleted, g.CompletedAt
+                ORDER BY g.CompletedAt DESC, g.Id DESC;
+                """
+            : """
+                SELECT
+                    g.Id, g.Title, g.Type, g.WeeklyMinMinutes, g.CreatedAt, g.IsArchived, g.IsCompleted, g.CompletedAt,
+                    COUNT(ws.Id) AS TotalSessions,
+                    COALESCE(SUM(ws.DurationSeconds), 0) AS TotalSeconds,
+                    COALESCE(SUM(CASE
+                        WHEN ws.SessionDate >= @weekStart AND ws.SessionDate <= @weekEnd
+                        THEN ws.DurationSeconds ELSE 0 END), 0) AS WeeklySeconds
+                FROM Goals g
+                LEFT JOIN WorkSessions ws ON ws.GoalId = g.Id
+                WHERE g.IsArchived = 0 AND g.IsCompleted = 0
+                GROUP BY g.Id, g.Title, g.Type, g.WeeklyMinMinutes, g.CreatedAt, g.IsArchived, g.IsCompleted, g.CompletedAt
+                ORDER BY g.Id DESC;
+                """;
         cmd.Parameters.AddWithValue("@weekStart", weekStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         cmd.Parameters.AddWithValue("@weekEnd", weekEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
@@ -207,23 +262,45 @@ public class DatabaseService
         {
             list.Add(new GoalSummary
             {
-                Goal = new Goal
-                {
-                    Id = reader.GetInt32(0),
-                    Title = reader.GetString(1),
-                    Type = reader.GetString(2),
-                    WeeklyMinMinutes = reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
-                    CreatedAt = reader.GetString(4),
-                    IsArchived = reader.GetInt32(5) == 1
-                },
-                TotalSessionCount = reader.GetInt32(6),
-                TotalDurationSeconds = reader.GetInt32(7),
-                WeeklyDurationSeconds = reader.GetInt32(8)
+                Goal = ReadGoal(reader),
+                TotalSessionCount = reader.GetInt32(8),
+                TotalDurationSeconds = reader.GetInt32(9),
+                WeeklyDurationSeconds = reader.GetInt32(10)
             });
         }
 
         return list;
     }
+
+    public void SetGoalCompleted(int id, bool isCompleted)
+    {
+        using var connection = CreateConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            UPDATE Goals
+            SET IsCompleted = @completed,
+                CompletedAt = @completedAt
+            WHERE Id = @id;
+            """;
+        cmd.Parameters.AddWithValue("@id", id);
+        cmd.Parameters.AddWithValue("@completed", isCompleted ? 1 : 0);
+        cmd.Parameters.AddWithValue("@completedAt", isCompleted
+            ? DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)
+            : (object)DBNull.Value);
+        cmd.ExecuteNonQuery();
+    }
+
+    private static Goal ReadGoal(SqliteDataReader reader) => new()
+    {
+        Id = reader.GetInt32(0),
+        Title = reader.GetString(1),
+        Type = reader.GetString(2),
+        WeeklyMinMinutes = reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
+        CreatedAt = reader.GetString(4),
+        IsArchived = reader.GetInt32(5) == 1,
+        IsCompleted = reader.GetInt32(6) == 1,
+        CompletedAt = reader.IsDBNull(7) ? null : reader.GetString(7)
+    };
 
     public int AddGoal(string title, string type, int weeklyMinMinutes)
     {
@@ -526,7 +603,7 @@ public class DatabaseService
         using var connection = CreateConnection();
         using var cmd = connection.CreateCommand();
         cmd.CommandText = """
-            SELECT Id, Title, Type, WeeklyMinMinutes, CreatedAt, IsArchived
+            SELECT Id, Title, Type, WeeklyMinMinutes, CreatedAt, IsArchived, IsCompleted, CompletedAt
             FROM Goals
             ORDER BY Id ASC;
             """;
@@ -534,18 +611,131 @@ public class DatabaseService
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
-            list.Add(new Goal
-            {
-                Id = reader.GetInt32(0),
-                Title = reader.GetString(1),
-                Type = reader.GetString(2),
-                WeeklyMinMinutes = reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
-                CreatedAt = reader.GetString(4),
-                IsArchived = reader.GetInt32(5) == 1
-            });
+            list.Add(ReadGoal(reader));
         }
 
         return list;
+    }
+
+    #endregion
+
+    #region DayOffs
+
+    public DayOff? GetDayOff(DateTime date)
+    {
+        using var connection = CreateConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "SELECT Date, Reason, CreatedAt FROM DayOffs WHERE Date = @date;";
+        cmd.Parameters.AddWithValue("@date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        using var reader = cmd.ExecuteReader();
+        if (reader.Read())
+        {
+            return new DayOff
+            {
+                Date = reader.GetString(0),
+                Reason = reader.GetString(1),
+                CreatedAt = reader.GetString(2)
+            };
+        }
+
+        return null;
+    }
+
+    public Dictionary<string, DayOff> GetDayOffsByRange(DateTime startDate, DateTime endDate)
+    {
+        var result = new Dictionary<string, DayOff>();
+        using var connection = CreateConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            SELECT Date, Reason, CreatedAt
+            FROM DayOffs
+            WHERE Date >= @start AND Date <= @end
+            ORDER BY Date ASC;
+            """;
+        cmd.Parameters.AddWithValue("@start", startDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        cmd.Parameters.AddWithValue("@end", endDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            var d = new DayOff
+            {
+                Date = reader.GetString(0),
+                Reason = reader.GetString(1),
+                CreatedAt = reader.GetString(2)
+            };
+            result[d.Date] = d;
+        }
+
+        return result;
+    }
+
+    public HashSet<string> GetAllDayOffDates()
+    {
+        var set = new HashSet<string>();
+        using var connection = CreateConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "SELECT Date FROM DayOffs;";
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            set.Add(reader.GetString(0));
+        }
+
+        return set;
+    }
+
+    public void SetDayOff(DateTime date, string reason)
+    {
+        var trimmedReason = string.IsNullOrWhiteSpace(reason) ? "İzinli" : reason.Trim();
+        using var connection = CreateConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO DayOffs (Date, Reason, CreatedAt)
+            VALUES (@date, @reason, @createdAt)
+            ON CONFLICT(Date) DO UPDATE SET Reason = excluded.Reason;
+            """;
+        cmd.Parameters.AddWithValue("@date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        cmd.Parameters.AddWithValue("@reason", trimmedReason);
+        cmd.Parameters.AddWithValue("@createdAt", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+        cmd.ExecuteNonQuery();
+    }
+
+    public void RemoveDayOff(DateTime date)
+    {
+        using var connection = CreateConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "DELETE FROM DayOffs WHERE Date = @date;";
+        cmd.Parameters.AddWithValue("@date", date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        cmd.ExecuteNonQuery();
+    }
+
+    #endregion
+
+    #region AppSettings
+
+    public string GetSetting(string key, string defaultValue)
+    {
+        using var connection = CreateConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "SELECT Value FROM AppSettings WHERE Key = @key;";
+        cmd.Parameters.AddWithValue("@key", key);
+        var val = cmd.ExecuteScalar();
+        return val is string s && !string.IsNullOrWhiteSpace(s) ? s : defaultValue;
+    }
+
+    public void SetSetting(string key, string value)
+    {
+        using var connection = CreateConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = """
+            INSERT INTO AppSettings (Key, Value)
+            VALUES (@key, @value)
+            ON CONFLICT(Key) DO UPDATE SET Value = excluded.Value;
+            """;
+        cmd.Parameters.AddWithValue("@key", key);
+        cmd.Parameters.AddWithValue("@value", value);
+        cmd.ExecuteNonQuery();
     }
 
     #endregion

@@ -56,10 +56,11 @@ public partial class GoalSummaryPanel : UserControl
 
     private static Border CreateCompactProcessCard(GoalSummary summary)
     {
+        var p = ThemeService.CurrentPalette;
         var card = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x14, 0x1D, 0x2D)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x23, 0x32, 0x4B)),
+            Background = ThemeService.Brush(p.BgCard),
+            BorderBrush = ThemeService.Brush(p.BorderSubtle),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(9),
             Padding = new Thickness(12, 9, 12, 9),
@@ -76,22 +77,22 @@ public partial class GoalSummaryPanel : UserControl
             Text = summary.Goal.Title,
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xF1, 0xF5, 0xF9)),
+            Foreground = ThemeService.Brush(p.TextPrimary),
             TextTrimming = TextTrimming.CharacterEllipsis
         });
         left.Children.Add(new TextBlock
         {
             Text = $"Toplam {summary.TotalSessionCount} oturum",
             FontSize = 11,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B))
+            Foreground = ThemeService.Brush(p.TextSecondary)
         });
         Grid.SetColumn(left, 0);
         grid.Children.Add(left);
 
         var pill = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x16, 0x2B, 0x4A)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x2B, 0x56, 0x94)),
+            Background = ThemeService.Brush(p.AccentSurface),
+            BorderBrush = ThemeService.Brush(p.BorderActive),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(6),
             Padding = new Thickness(9, 4, 9, 4),
@@ -103,7 +104,7 @@ public partial class GoalSummaryPanel : UserControl
             Text = FormatDurationShort(summary.TotalDurationSeconds),
             FontSize = 11.5,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD))
+            Foreground = ThemeService.Brush(p.AccentText)
         };
         Grid.SetColumn(pill, 1);
         grid.Children.Add(pill);
@@ -147,7 +148,7 @@ public partial class GoalSummaryPanel : UserControl
             Text = summary.Goal.Title,
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC)),
+            Foreground = ThemeService.Brush(ThemeService.CurrentPalette.TextPrimary),
             TextTrimming = TextTrimming.CharacterEllipsis
         };
         Grid.SetColumn(title, 0);
@@ -160,7 +161,7 @@ public partial class GoalSummaryPanel : UserControl
             FontWeight = FontWeights.SemiBold,
             Foreground = hasWork
                 ? colorInfo.CreateAccentTextBrush()
-                : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8)),
+                : ThemeService.Brush(ThemeService.CurrentPalette.TextSecondary),
             Margin = new Thickness(8, 0, 0, 0)
         };
         Grid.SetColumn(ratio, 1);
@@ -219,10 +220,11 @@ public partial class GoalSummaryPanel : UserControl
 
     private static Border CreateCompactEmpty(string text)
     {
+        var p = ThemeService.CurrentPalette;
         return new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x0E, 0x14, 0x20)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x1C, 0x26, 0x38)),
+            Background = ThemeService.Brush(p.BgInput),
+            BorderBrush = ThemeService.Brush(p.BorderSubtle),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(8),
             Padding = new Thickness(12, 16, 12, 16),
@@ -230,7 +232,7 @@ public partial class GoalSummaryPanel : UserControl
             {
                 Text = text,
                 FontSize = 11.5,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B)),
+                Foreground = ThemeService.Brush(p.TextSecondary),
                 TextAlignment = TextAlignment.Center
             }
         };

@@ -5,13 +5,15 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="*" MinHeight="220" />
+            <RowDefinition Height="14" />
+            <RowDefinition Height="Auto" MaxHeight="225" />
         </Grid.RowDefinitions>
 
         <!-- Top Add / Edit Goal Card -->
         <Border Grid.Row="0"
-                Background="{StaticResource BgPanelBrush}"
-                BorderBrush="{StaticResource BorderSubtleBrush}"
+                Background="{DynamicResource BgPanelBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
                 BorderThickness="1"
                 CornerRadius="12"
                 Padding="20"
@@ -34,10 +36,10 @@
                                    Text="Yeni Hedef Oluştur"
                                    FontSize="18"
                                    FontWeight="Bold"
-                                   Foreground="#F8FAFC" />
+                                   Foreground="{DynamicResource TextPrimaryBrush}" />
                         <TextBlock Text="Süreç (sınırsız toplam takip) veya Görev (haftalık minimum hedef süreli) başlığı ekleyin."
                                    FontSize="12"
-                                   Foreground="#64748B"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    Margin="0,3,0,0" />
                     </StackPanel>
 
@@ -88,9 +90,9 @@
 
                     <!-- Goal Type Selector -->
                     <StackPanel Grid.Column="2">
-                        <TextBlock Text="Hedef Türü" FontSize="11.5" FontWeight="SemiBold" Foreground="#94A3B8" Margin="2,0,0,6" />
-                        <Border Background="#0E1420"
-                                BorderBrush="#223047"
+                        <TextBlock Text="Hedef Türü" FontSize="11.5" FontWeight="SemiBold" Foreground="{DynamicResource TextSecondaryBrush}" Margin="2,0,0,6" />
+                        <Border Background="{DynamicResource BgSegmentTrackBrush}"
+                                BorderBrush="{DynamicResource BorderSubtleBrush}"
                                 BorderThickness="1"
                                 CornerRadius="8"
                                 Padding="3"
@@ -119,8 +121,8 @@
                         <TextBlock Text="Haftalık Min. Süre" FontSize="11.5" FontWeight="SemiBold" Foreground="#94A3B8" Margin="2,0,0,6" />
 
                         <Border x:Name="ProcessNoLimitHint"
-                                Background="#0E1420"
-                                BorderBrush="#1E2A3D"
+                                Background="{DynamicResource BgInputBrush}"
+                                BorderBrush="{DynamicResource BorderSubtleBrush}"
                                 BorderThickness="1"
                                 CornerRadius="8"
                                 Height="36"
@@ -128,7 +130,7 @@
                                 Visibility="Visible">
                             <TextBlock Text="Sınır yok (toplam süre)"
                                        FontSize="12"
-                                       Foreground="#64748B"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        VerticalAlignment="Center" />
                         </Border>
 
@@ -193,8 +195,8 @@
 
             <!-- Left: Process Goals -->
             <Border Grid.Column="0"
-                    Background="{StaticResource BgPanelBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
+                    Background="{DynamicResource BgPanelBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
                     BorderThickness="1"
                     CornerRadius="12"
                     Padding="18">
@@ -209,8 +211,8 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Süreç Hedefleri" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC" />
-                        <TextBlock x:Name="ProcessCountText" Text="Sınır Yok" FontSize="12" Foreground="#64748B" VerticalAlignment="Center" Grid.Column="1" />
+                        <TextBlock Text="Süreç Hedefleri" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <TextBlock x:Name="ProcessCountText" Text="Sınır Yok" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Grid.Column="1" />
                     </Grid>
 
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -221,8 +223,8 @@
 
             <!-- Right: Task Goals -->
             <Border Grid.Column="2"
-                    Background="{StaticResource BgPanelBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
+                    Background="{DynamicResource BgPanelBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
                     BorderThickness="1"
                     CornerRadius="12"
                     Padding="18">
@@ -237,8 +239,8 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="Görev Hedefleri" FontSize="16" FontWeight="Bold" Foreground="#F8FAFC" />
-                        <TextBlock x:Name="TaskCountText" Text="Haftalık Min. Süre" FontSize="12" Foreground="#64748B" VerticalAlignment="Center" Grid.Column="1" />
+                        <TextBlock Text="Görev Hedefleri" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <TextBlock x:Name="TaskCountText" Text="Haftalık Min. Süre" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Grid.Column="1" />
                     </Grid>
 
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -247,5 +249,64 @@
                 </Grid>
             </Border>
         </Grid>
+
+        <!-- Bottom Separate Compartment: Completed Goals -->
+        <Border Grid.Row="3"
+                Background="{DynamicResource BgPanelBrush}"
+                BorderBrush="{DynamicResource BorderSubtleBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="18,14">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="20" Height="20" CornerRadius="10"
+                                Background="#153E24" BorderBrush="#43A047" BorderThickness="1"
+                                Margin="0,0,8,0">
+                            <TextBlock Text="✓" FontSize="11.5" FontWeight="Bold" Foreground="#86EFAC"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Tamamlanan Hedefler"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="• Aylık ve Genel istatistiklerde görünmeye devam eder"
+                                   FontSize="11.5"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   Margin="10,0,0,0"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <Border Grid.Column="1"
+                            Background="{DynamicResource DbStatusBgBrush}"
+                            BorderBrush="{DynamicResource DbStatusBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            Padding="9,2"
+                            VerticalAlignment="Center">
+                        <TextBlock x:Name="CompletedCountText"
+                                   Text="0 tamamlandı"
+                                   FontSize="11.5"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource DbStatusTextBrush}" />
+                    </Border>
+                </Grid>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="155">
+                    <StackPanel x:Name="CompletedGoalsStack" />
+                </ScrollViewer>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

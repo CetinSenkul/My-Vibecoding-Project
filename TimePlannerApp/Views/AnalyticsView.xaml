@@ -20,59 +20,59 @@
                          Grid.Row="0"
                          Columns="4"
                          Margin="0,0,0,14">
-                <Border Background="{StaticResource BgPanelBrush}"
-                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                <Border Background="{DynamicResource BgPanelBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
                         BorderThickness="1"
                         CornerRadius="10"
                         Padding="16,12"
                         Margin="0,0,6,0">
                     <StackPanel>
-                        <TextBlock Text="Toplam Çalışma" FontSize="11.5" Foreground="#64748B" />
-                        <TextBlock x:Name="KpiTotalTimeText" Text="0s 0dk" FontSize="20" FontWeight="Bold" Foreground="#F8FAFC" Margin="0,4,0,0" />
+                        <TextBlock Text="Toplam Çalışma" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBlock x:Name="KpiTotalTimeText" Text="0s 0dk" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="{StaticResource BgPanelBrush}"
-                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                <Border Background="{DynamicResource BgPanelBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
                         BorderThickness="1"
                         CornerRadius="10"
                         Padding="16,12"
                         Margin="6,0,6,0">
                     <StackPanel>
-                        <TextBlock Text="Oturum Sayısı" FontSize="11.5" Foreground="#64748B" />
-                        <TextBlock x:Name="KpiSessionsText" Text="0 oturum" FontSize="20" FontWeight="Bold" Foreground="#5B9BF8" Margin="0,4,0,0" />
+                        <TextBlock Text="Oturum Sayısı" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBlock x:Name="KpiSessionsText" Text="0 oturum" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource AccentBlueBrush}" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="{StaticResource BgPanelBrush}"
-                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                <Border Background="{DynamicResource BgPanelBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
                         BorderThickness="1"
                         CornerRadius="10"
                         Padding="16,12"
                         Margin="6,0,6,0">
                     <StackPanel>
-                        <TextBlock Text="En Çok Çalışılan" FontSize="11.5" Foreground="#64748B" />
-                        <TextBlock x:Name="KpiTopGoalText" Text="—" FontSize="16" FontWeight="Bold" Foreground="#86EFAC" Margin="0,7,0,0" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="En Çok Çalışılan" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBlock x:Name="KpiTopGoalText" Text="—" FontSize="16" FontWeight="Bold" Foreground="#43A047" Margin="0,7,0,0" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                 </Border>
 
-                <Border Background="{StaticResource BgPanelBrush}"
-                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                <Border Background="{DynamicResource BgPanelBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
                         BorderThickness="1"
                         CornerRadius="10"
                         Padding="16,12"
                         Margin="6,0,0,0">
                     <StackPanel>
-                        <TextBlock Text="Aktif Gün" FontSize="11.5" Foreground="#64748B" />
-                        <TextBlock x:Name="KpiActiveDaysText" Text="0 gün" FontSize="20" FontWeight="Bold" Foreground="#FDE047" Margin="0,4,0,0" />
+                        <TextBlock Text="Aktif Gün" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                        <TextBlock x:Name="KpiActiveDaysText" Text="0 gün" FontSize="20" FontWeight="Bold" Foreground="#EA8C00" Margin="0,4,0,0" />
                     </StackPanel>
                 </Border>
             </UniformGrid>
 
             <!-- Time Filter Tabs Bar: Günlük | Haftalık | Aylık | Genel -->
             <Border Grid.Row="1"
-                    Background="{StaticResource BgPanelBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
+                    Background="{DynamicResource BgPanelBrush}"
+                    BorderBrush="{DynamicResource BorderSubtleBrush}"
                     BorderThickness="1"
                     CornerRadius="10"
                     Padding="6,4"
@@ -128,8 +128,8 @@
 
                     <!-- Left: Donut Chart Card -->
                     <Border Grid.Column="0"
-                            Background="{StaticResource BgPanelBrush}"
-                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                            Background="{DynamicResource BgPanelBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
                             BorderThickness="1"
                             CornerRadius="12"
                             Padding="12,10">
@@ -144,7 +144,7 @@
                                        Text="Daire Grafiği"
                                        FontSize="12.5"
                                        FontWeight="SemiBold"
-                                       Foreground="#CBD5E1"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
                                        Margin="0,0,0,4" />
 
                             <Grid Grid.Row="1">
@@ -163,12 +163,12 @@
                                                Text="0.0s"
                                                FontSize="15"
                                                FontWeight="Bold"
-                                               Foreground="#F8FAFC"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
                                                HorizontalAlignment="Center" />
                                     <TextBlock x:Name="DonutCenterLabelText"
                                                Text="Haftalık"
                                                FontSize="10"
-                                               Foreground="#64748B"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
                                                HorizontalAlignment="Center" />
                                 </StackPanel>
 
@@ -176,7 +176,7 @@
                                 <TextBlock x:Name="DonutEmptyText"
                                            Text="Kayıtlı oturum yok"
                                            FontSize="11.5"
-                                           Foreground="#475569"
+                                           Foreground="{DynamicResource TextMutedBrush}"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            Visibility="Collapsed"
@@ -187,8 +187,8 @@
 
                     <!-- Right: Column Chart Card -->
                     <Border Grid.Column="2"
-                            Background="{StaticResource BgPanelBrush}"
-                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                            Background="{DynamicResource BgPanelBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
                             BorderThickness="1"
                             CornerRadius="12"
                             Padding="12,10">
@@ -203,7 +203,7 @@
                                        Text="Sütun Grafiği"
                                        FontSize="12.5"
                                        FontWeight="SemiBold"
-                                       Foreground="#CBD5E1"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
                                        Margin="0,0,0,4" />
 
                             <Grid Grid.Row="1">
@@ -216,7 +216,7 @@
                                 <TextBlock x:Name="ColumnEmptyText"
                                            Text="Kayıtlı oturum yok"
                                            FontSize="11.5"
-                                           Foreground="#475569"
+                                           Foreground="{DynamicResource TextMutedBrush}"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
                                            Visibility="Collapsed"
@@ -228,8 +228,8 @@
 
                 <!-- Bottom Row: Task Scatter / Dot Plot Card -->
                 <Border Grid.Row="2"
-                        Background="{StaticResource BgPanelBrush}"
-                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                        Background="{DynamicResource BgPanelBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
                         BorderThickness="1"
                         CornerRadius="12"
                         Padding="12,10">
@@ -251,7 +251,7 @@
                                        Text="Görev Grafiği (Nokta Dağılımı)"
                                        FontSize="12.5"
                                        FontWeight="SemiBold"
-                                       Foreground="#CBD5E1"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
                                        VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis" />
 
@@ -311,7 +311,7 @@
                 Panel.ZIndex="99">
             <Border x:Name="RpgTooltipCard"
                     Visibility="Collapsed"
-                    Background="#F50D1422"
+                    Background="{DynamicResource TooltipBgBrush}"
                     BorderBrush="#FDD835"
                     BorderThickness="1.4"
                     CornerRadius="8"
@@ -338,8 +338,8 @@
                                    TextTrimming="CharacterEllipsis" />
                         <Border x:Name="TooltipBadgeBorder"
                                 Grid.Column="1"
-                                Background="#1D2B44"
-                                BorderBrush="#3B6CB7"
+                                Background="{DynamicResource AccentBlueSurfaceBrush}"
+                                BorderBrush="{DynamicResource BorderActiveBrush}"
                                 BorderThickness="1"
                                 CornerRadius="4"
                                 Padding="5,1"
@@ -348,7 +348,7 @@
                                        Text="GÖREV"
                                        FontSize="9"
                                        FontWeight="Bold"
-                                       Foreground="#BFDBFE" />
+                                       Foreground="{DynamicResource AccentTextBrush}" />
                         </Border>
                     </Grid>
 
@@ -356,12 +356,12 @@
                                Text="4.0 Saat (%80)"
                                FontSize="12"
                                FontWeight="SemiBold"
-                               Foreground="#F8FAFC" />
+                               Foreground="{DynamicResource TextPrimaryBrush}" />
 
                     <TextBlock x:Name="TooltipSecondaryStatText"
                                Text="Hedef: 5.0 Saat • Pay: %34"
                                FontSize="11"
-                               Foreground="#94A3B8"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                Margin="0,2,0,0" />
                 </StackPanel>
             </Border>

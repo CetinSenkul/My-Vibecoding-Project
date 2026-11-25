@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:views="clr-namespace:TimePlannerApp.Views"
-        Title="Time Planner — C# WPF (.NET 8)"
+        Title="Time Planner v1.0"
+        Icon="Assets/app.ico"
         Width="1360"
         Height="840"
         MinWidth="1024"
@@ -11,7 +12,7 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         ResizeMode="CanResize"
-        Background="{StaticResource BgDeepBrush}">
+        Background="{DynamicResource BgDeepBrush}">
 
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="38"
@@ -22,329 +23,399 @@
     </shell:WindowChrome.WindowChrome>
 
     <Border x:Name="RootBorder"
-            Background="{StaticResource BgDeepBrush}"
-            BorderBrush="{StaticResource BorderSubtleBrush}"
+            Background="{DynamicResource BgDeepBrush}"
+            BorderBrush="{DynamicResource BorderSubtleBrush}"
             BorderThickness="1">
         <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="38" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+            <!-- Space Theme Starfield / Nebula Atmospheric Layer -->
+            <Canvas x:Name="SpaceBackdropCanvas"
+                    Visibility="Collapsed"
+                    IsHitTestVisible="False"
+                    ClipToBounds="True" />
 
-            <!-- Custom Title Bar -->
-            <Border Grid.Row="0"
-                    Background="{StaticResource BgTitleBarBrush}"
-                    BorderBrush="{StaticResource BorderSubtleBrush}"
-                    BorderThickness="0,0,0,1">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="38" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                    <!-- App Icon & Title -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
-                        <Border Width="18" Height="18" CornerRadius="9" BorderBrush="#5B9BF8" BorderThickness="1.6" Margin="0,0,8,0">
-                            <Path Data="M 9,4 L 9,9 L 12.5,11" Stroke="#5B9BF8" StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
-                        </Border>
-                        <TextBlock Text="Time Planner — C# WPF (.NET 8)"
-                                   FontSize="12.5"
-                                   FontWeight="SemiBold"
-                                   Foreground="#CBD5E1"
-                                   VerticalAlignment="Center" />
-                    </StackPanel>
-
-                    <!-- Live System Date & Clock -->
-                    <StackPanel Grid.Column="1"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Margin="0,0,16,0">
-                        <Border Background="#141C2B"
-                                BorderBrush="#233047"
-                                BorderThickness="1"
-                                CornerRadius="6"
-                                Padding="10,3">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Ellipse Width="6" Height="6" Fill="#43A047" Margin="0,0,7,0" VerticalAlignment="Center" />
-                                <TextBlock x:Name="LiveDateTimeText"
-                                           Text="24 Kasım 2026 • 09:00:00"
-                                           FontSize="11.5"
-                                           FontWeight="Medium"
-                                           Foreground="#CBD5E1" />
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-
-                    <!-- Window Buttons -->
-                    <StackPanel Grid.Column="2"
-                                Orientation="Horizontal"
-                                shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                        <Button Style="{StaticResource WindowControlButtonStyle}"
-                                Click="MinimizeButton_Click"
-                                ToolTip="Küçült">
-                            <Path Data="M 0,5 L 10,5" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2" />
-                        </Button>
-                        <Button x:Name="MaximizeButton"
-                                Style="{StaticResource WindowControlButtonStyle}"
-                                Click="MaximizeButton_Click"
-                                ToolTip="Büyüt / Geri Yükle">
-                            <Rectangle Width="9" Height="9" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2" />
-                        </Button>
-                        <Button Style="{StaticResource WindowCloseButtonStyle}"
-                                Click="CloseButton_Click"
-                                ToolTip="Kapat">
-                            <Path Data="M 0,0 L 9,9 M 9,0 L 0,9" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2" />
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <!-- Main Shell Body -->
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="220" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <!-- Left Sidebar -->
-                <Border Grid.Column="0"
-                        Background="{StaticResource BgSidebarBrush}"
-                        BorderBrush="{StaticResource BorderSubtleBrush}"
-                        BorderThickness="0,0,1,0"
-                        Padding="14,18,14,14">
+                <!-- Custom Title Bar -->
+                <Border Grid.Row="0"
+                        Background="{DynamicResource BgTitleBarBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="0,0,0,1">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                        <!-- Brand Logo -->
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="4,0,0,22">
-                            <TextBlock Text="Time" FontSize="22" FontWeight="Bold" Foreground="#F8FAFC" />
-                            <TextBlock Text="Planner" FontSize="22" FontWeight="Bold" Foreground="#5B9BF8" />
-                        </StackPanel>
-
-                        <!-- Navigation Menu -->
-                        <StackPanel Grid.Row="1" Margin="0,0,0,18">
-                            <RadioButton x:Name="NavCalendar"
-                                         GroupName="MainNav"
-                                         Style="{StaticResource SidebarNavButtonStyle}"
-                                         IsChecked="True"
-                                         Checked="NavButton_Checked"
-                                         Tag="Calendar">
-                                <StackPanel Orientation="Horizontal">
-                                    <Path Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"
-                                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
-                                          Data="M19,4H18V2H16V4H8V2H6V4H5C3.89,4 3,4.9 3,6V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V6A2,2 0 0,0 19,4M19,20H5V10H19V20M19,8H5V6H19V8Z" />
-                                    <TextBlock Text="Takvim" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
-                                </StackPanel>
-                            </RadioButton>
-
-                            <RadioButton x:Name="NavGoals"
-                                         GroupName="MainNav"
-                                         Style="{StaticResource SidebarNavButtonStyle}"
-                                         Checked="NavButton_Checked"
-                                         Tag="Goals">
-                                <StackPanel Orientation="Horizontal">
-                                    <Path Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"
-                                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
-                                          Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z" />
-                                    <TextBlock Text="Hedefler" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
-                                </StackPanel>
-                            </RadioButton>
-
-                            <RadioButton x:Name="NavStopwatch"
-                                         GroupName="MainNav"
-                                         Style="{StaticResource SidebarNavButtonStyle}"
-                                         Checked="NavButton_Checked"
-                                         Tag="Stopwatch">
-                                <StackPanel Orientation="Horizontal">
-                                    <Path Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"
-                                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
-                                          Data="M15,1H9V3H15M11,14H13V8H11M19.03,7.39L20.45,5.97C20,5.46 19.55,5 19.04,4.56L17.62,6C16.07,4.74 14.12,4 12,4A9,9 0 0,0 3,13A9,9 0 0,0 12,22C17,22 21,17.97 21,13C21,10.88 20.26,8.93 19.03,7.39M12,20A7,7 0 0,1 5,13A7,7 0 0,1 12,6A7,7 0 0,1 19,13A7,7 0 0,1 12,20Z" />
-                                    <TextBlock Text="Kronometre" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
-                                </StackPanel>
-                            </RadioButton>
-
-                            <RadioButton x:Name="NavAnalytics"
-                                         GroupName="MainNav"
-                                         Style="{StaticResource SidebarNavButtonStyle}"
-                                         Checked="NavButton_Checked"
-                                         Tag="Analytics">
-                                <StackPanel Orientation="Horizontal">
-                                    <Path Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"
-                                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
-                                          Data="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" />
-                                    <TextBlock Text="Analiz" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
-                                </StackPanel>
-                            </RadioButton>
-
-                            <RadioButton x:Name="NavSettings"
-                                         GroupName="MainNav"
-                                         Style="{StaticResource SidebarNavButtonStyle}"
-                                         Checked="NavButton_Checked"
-                                         Tag="Settings">
-                                <StackPanel Orientation="Horizontal">
-                                    <Path Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"
-                                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
-                                          Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
-                                    <TextBlock Text="Ayarlar" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
-                                </StackPanel>
-                            </RadioButton>
-                        </StackPanel>
-
-                        <!-- Color Scale Legend Card -->
-                        <Border Grid.Row="2"
-                                Background="{StaticResource BgPanelBrush}"
-                                BorderBrush="{StaticResource BorderSubtleBrush}"
-                                BorderThickness="1"
-                                CornerRadius="10"
-                                Padding="12">
-                            <StackPanel>
-                                <TextBlock Text="RENK SKALASI"
+                        <!-- App "P" Badge & Title -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0">
+                            <Border Width="20" Height="20" CornerRadius="5"
+                                    Background="{DynamicResource AccentBlueSurfaceBrush}"
+                                    BorderBrush="{DynamicResource AccentBlueBrush}"
+                                    BorderThickness="1.3"
+                                    Margin="0,0,8,0">
+                                <TextBlock Text="P"
+                                           FontSize="12"
+                                           FontWeight="ExtraBold"
+                                           Foreground="{DynamicResource AccentBlueBrush}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
+                            </Border>
+                            <TextBlock Text="Time Planner v1.0"
+                                       FontSize="12.5"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       VerticalAlignment="Center" />
+                            <Border x:Name="ActiveSeasonChip"
+                                    Visibility="Collapsed"
+                                    Background="{DynamicResource AccentBlueSurfaceBrush}"
+                                    BorderBrush="{DynamicResource BorderActiveBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="5"
+                                    Padding="7,1"
+                                    Margin="10,0,0,0"
+                                    VerticalAlignment="Center">
+                                <TextBlock x:Name="ActiveSeasonChipText"
+                                           Text="Sonbahar"
                                            FontSize="10.5"
-                                           FontWeight="Bold"
-                                           Foreground="#64748B"
-                                           Margin="0,0,0,10" />
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AccentTextBrush}" />
+                            </Border>
+                        </StackPanel>
 
-                                <Grid Margin="0,0,0,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Width="12" Height="12" CornerRadius="3" Background="#121212" BorderBrush="#475569" BorderThickness="1" HorizontalAlignment="Left" />
-                                    <TextBlock Grid.Column="1" Text="%0" FontSize="11.5" Foreground="#94A3B8" />
-                                    <TextBlock Grid.Column="2" Text="Siyah" FontSize="11.5" Foreground="#94A3B8" />
-                                </Grid>
+                        <!-- Right Bar: Quick Theme Selector + Live System Date & Clock -->
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,12,0">
 
-                                <Grid Margin="0,0,0,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Width="12" Height="12" CornerRadius="3" Background="#4A1A1D" BorderBrush="#E53935" BorderThickness="1" HorizontalAlignment="Left" />
-                                    <TextBlock Grid.Column="1" Text="%1-50" FontSize="11.5" Foreground="#94A3B8" />
-                                    <TextBlock Grid.Column="2" Text="Kırmızı" FontSize="11.5" Foreground="#EF5350" />
-                                </Grid>
-
-                                <Grid Margin="0,0,0,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Width="12" Height="12" CornerRadius="3" Background="#4F2E10" BorderBrush="#FB8C00" BorderThickness="1" HorizontalAlignment="Left" />
-                                    <TextBlock Grid.Column="1" Text="%50-70" FontSize="11.5" Foreground="#94A3B8" />
-                                    <TextBlock Grid.Column="2" Text="Turuncu" FontSize="11.5" Foreground="#FFA726" />
-                                </Grid>
-
-                                <Grid Margin="0,0,0,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Width="12" Height="12" CornerRadius="3" Background="#4A4114" BorderBrush="#FDD835" BorderThickness="1" HorizontalAlignment="Left" />
-                                    <TextBlock Grid.Column="1" Text="%70-90" FontSize="11.5" Foreground="#94A3B8" />
-                                    <TextBlock Grid.Column="2" Text="Sarı" FontSize="11.5" Foreground="#FFEE58" />
-                                </Grid>
-
-                                <Grid Margin="0,0,0,6">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Width="12" Height="12" CornerRadius="3" Background="#183D22" BorderBrush="#43A047" BorderThickness="1" HorizontalAlignment="Left" />
-                                    <TextBlock Grid.Column="1" Text="%90-110" FontSize="11.5" Foreground="#94A3B8" />
-                                    <TextBlock Grid.Column="2" Text="Yeşil" FontSize="11.5" Foreground="#66BB6A" />
-                                </Grid>
-
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Width="12" Height="12" CornerRadius="3" Background="#143354" BorderBrush="#1E88E5" BorderThickness="1" HorizontalAlignment="Left" />
-                                    <TextBlock Grid.Column="1" Text="%110+" FontSize="11.5" Foreground="#94A3B8" />
-                                    <TextBlock Grid.Column="2" Text="Mavi" FontSize="11.5" Foreground="#42A5F5" />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Bottom SQLite Status Pill -->
-                        <Border Grid.Row="4"
-                                Background="#0E2219"
-                                BorderBrush="#1D4A34"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="10,7">
-                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Ellipse Width="7" Height="7" Fill="#43A047" Margin="0,0,8,0" />
-                                <TextBlock x:Name="DbStatusText"
-                                           Text="SQLite: planner.db (0 KB)"
+                            <!-- Quick Theme Switcher -->
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        Margin="0,0,10,0"
+                                        shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                                <TextBlock Text="Tema:"
                                            FontSize="11.5"
-                                           FontWeight="Medium"
-                                           Foreground="#6EE7B7" />
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,6,0" />
+                                <ComboBox x:Name="QuickThemeComboBox"
+                                          Style="{StaticResource DarkComboBoxStyle}"
+                                          Width="112"
+                                          Height="26"
+                                          FontSize="11.5"
+                                          SelectionChanged="QuickThemeComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="Karanlık" Tag="Dark" />
+                                    <ComboBoxItem Content="Aydınlık" Tag="Light" />
+                                    <ComboBoxItem Content="Uzay" Tag="Space" />
+                                    <ComboBoxItem Content="Mevsimler" Tag="Seasons" />
+                                </ComboBox>
                             </StackPanel>
-                        </Border>
+
+                            <!-- Live Clock -->
+                            <Border Background="{DynamicResource BgCardBrush}"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="10,3">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Ellipse Width="6" Height="6" Fill="#43A047" Margin="0,0,7,0" VerticalAlignment="Center" />
+                                    <TextBlock x:Name="LiveDateTimeText"
+                                               Text="24 Kasım 2026 • 09:00:00"
+                                               FontSize="11.5"
+                                               FontWeight="Medium"
+                                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Window Buttons -->
+                        <StackPanel Grid.Column="2"
+                                    Orientation="Horizontal"
+                                    shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                            <Button Style="{StaticResource WindowControlButtonStyle}"
+                                    Click="MinimizeButton_Click"
+                                    ToolTip="Küçült">
+                                <Path Data="M 0,5 L 10,5" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2" />
+                            </Button>
+                            <Button x:Name="MaximizeButton"
+                                    Style="{StaticResource WindowControlButtonStyle}"
+                                    Click="MaximizeButton_Click"
+                                    ToolTip="Büyüt / Geri Yükle">
+                                <Rectangle Width="9" Height="9" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2" />
+                            </Button>
+                            <Button Style="{StaticResource WindowCloseButtonStyle}"
+                                    Click="CloseButton_Click"
+                                    ToolTip="Kapat">
+                                <Path Data="M 0,0 L 9,9 M 9,0 L 0,9" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2" />
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
-                <!-- Main Workspace Content Area -->
-                <Grid Grid.Column="1" Margin="14">
-                    <!-- Takvim Dashboard View (Center: Calendar + Goal Summary | Right: Stopwatch + Live Analytics) -->
-                    <Grid x:Name="CalendarDashboardContainer" Visibility="Visible">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="14" />
-                            <ColumnDefinition Width="355" />
-                        </Grid.ColumnDefinitions>
+                <!-- Main Shell Body -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="220" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                        <!-- Center Column: Calendar + Goal Summary -->
-                        <Grid Grid.Column="0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" MinHeight="340" />
-                                <RowDefinition Height="12" />
-                                <RowDefinition Height="195" />
-                            </Grid.RowDefinitions>
-
-                            <views:CalendarView x:Name="CalendarViewControl" Grid.Row="0" />
-                            <views:GoalSummaryPanel x:Name="GoalSummaryControl" Grid.Row="2" />
-                        </Grid>
-
-                        <!-- Right Column: Stopwatch Widget + Live Compact Analytics -->
-                        <Grid Grid.Column="2">
+                    <!-- Left Sidebar -->
+                    <Border Grid.Column="0"
+                            Background="{DynamicResource BgSidebarBrush}"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                            BorderThickness="0,0,1,0"
+                            Padding="14,18,14,14">
+                        <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="12" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
-                            <views:StopwatchControl x:Name="DashboardStopwatchControl" Grid.Row="0" />
-                            <views:AnalyticsView x:Name="DashboardAnalyticsControl" Grid.Row="2" IsCompactMode="True" />
+                            <!-- Brand Logo -->
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="4,0,0,20">
+                                <TextBlock Text="Time" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource TextPrimaryBrush}" />
+                                <TextBlock Text="Planner" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource AccentBlueBrush}" />
+                            </StackPanel>
+
+                            <!-- Navigation Menu -->
+                            <StackPanel Grid.Row="1" Margin="0,0,0,16">
+                                <RadioButton x:Name="NavCalendar"
+                                             GroupName="MainNav"
+                                             Style="{StaticResource SidebarNavButtonStyle}"
+                                             IsChecked="True"
+                                             Checked="NavButton_Checked"
+                                             Tag="Calendar">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"
+                                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                              Data="M19,4H18V2H16V4H8V2H6V4H5C3.89,4 3,4.9 3,6V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V6A2,2 0 0,0 19,4M19,20H5V10H19V20M19,8H5V6H19V8Z" />
+                                        <TextBlock Text="Takvim" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton x:Name="NavGoals"
+                                             GroupName="MainNav"
+                                             Style="{StaticResource SidebarNavButtonStyle}"
+                                             Checked="NavButton_Checked"
+                                             Tag="Goals">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"
+                                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                              Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,7A5,5 0 0,0 7,12A5,5 0 0,0 12,17A5,5 0 0,0 17,12A5,5 0 0,0 12,7M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z" />
+                                        <TextBlock Text="Hedefler" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton x:Name="NavStopwatch"
+                                             GroupName="MainNav"
+                                             Style="{StaticResource SidebarNavButtonStyle}"
+                                             Checked="NavButton_Checked"
+                                             Tag="Stopwatch">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"
+                                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                              Data="M15,1H9V3H15M11,14H13V8H11M19.03,7.39L20.45,5.97C20,5.46 19.55,5 19.04,4.56L17.62,6C16.07,4.74 14.12,4 12,4A9,9 0 0,0 3,13A9,9 0 0,0 12,22C17,22 21,17.97 21,13C21,10.88 20.26,8.93 19.03,7.39M12,20A7,7 0 0,1 5,13A7,7 0 0,1 12,6A7,7 0 0,1 19,13A7,7 0 0,1 12,20Z" />
+                                        <TextBlock Text="Kronometre" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton x:Name="NavAnalytics"
+                                             GroupName="MainNav"
+                                             Style="{StaticResource SidebarNavButtonStyle}"
+                                             Checked="NavButton_Checked"
+                                             Tag="Analytics">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"
+                                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                              Data="M22,21H2V3H4V19H6V10H10V19H12V6H16V19H18V14H22V21Z" />
+                                        <TextBlock Text="Analiz" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                    </StackPanel>
+                                </RadioButton>
+
+                                <RadioButton x:Name="NavSettings"
+                                             GroupName="MainNav"
+                                             Style="{StaticResource SidebarNavButtonStyle}"
+                                             Checked="NavButton_Checked"
+                                             Tag="Settings">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Width="15" Height="15" Stretch="Uniform" Margin="0,0,10,0"
+                                              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}"
+                                              Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+                                        <TextBlock Text="Ayarlar" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                    </StackPanel>
+                                </RadioButton>
+                            </StackPanel>
+
+                            <!-- Color Scale Legend Card -->
+                            <Border Grid.Row="2"
+                                    Background="{DynamicResource BgPanelBrush}"
+                                    BorderBrush="{DynamicResource BorderSubtleBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="12">
+                                <StackPanel>
+                                    <TextBlock Text="RENK SKALASI"
+                                               FontSize="10.5"
+                                               FontWeight="Bold"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               Margin="0,0,0,9" />
+
+                                    <Grid Margin="0,0,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" CornerRadius="3" Background="{DynamicResource BgCellZeroBrush}" BorderBrush="{DynamicResource BorderCellZeroBrush}" BorderThickness="1" HorizontalAlignment="Left" />
+                                        <TextBlock Grid.Column="1" Text="%0" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        <TextBlock Grid.Column="2" Text="Siyah" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" CornerRadius="3" Background="#4A1A1D" BorderBrush="#E53935" BorderThickness="1" HorizontalAlignment="Left" />
+                                        <TextBlock Grid.Column="1" Text="%1-50" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        <TextBlock Grid.Column="2" Text="Kırmızı" FontSize="11.5" Foreground="#E53935" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" CornerRadius="3" Background="#4F2E10" BorderBrush="#FB8C00" BorderThickness="1" HorizontalAlignment="Left" />
+                                        <TextBlock Grid.Column="1" Text="%50-70" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        <TextBlock Grid.Column="2" Text="Turuncu" FontSize="11.5" Foreground="#EA7600" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" CornerRadius="3" Background="#4A4114" BorderBrush="#FDD835" BorderThickness="1" HorizontalAlignment="Left" />
+                                        <TextBlock Grid.Column="1" Text="%70-90" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        <TextBlock Grid.Column="2" Text="Sarı" FontSize="11.5" Foreground="#CA8A04" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" CornerRadius="3" Background="#183D22" BorderBrush="#43A047" BorderThickness="1" HorizontalAlignment="Left" />
+                                        <TextBlock Grid.Column="1" Text="%90-110" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        <TextBlock Grid.Column="2" Text="Yeşil" FontSize="11.5" Foreground="#43A047" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" CornerRadius="3" Background="#143354" BorderBrush="#1E88E5" BorderThickness="1" HorizontalAlignment="Left" />
+                                        <TextBlock Grid.Column="1" Text="%110+" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        <TextBlock Grid.Column="2" Text="Mavi" FontSize="11.5" Foreground="#1E88E5" />
+                                    </Grid>
+
+                                    <Border Height="1" Background="{DynamicResource BorderSubtleBrush}" Margin="0,3,0,6" />
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border Width="12" Height="12" CornerRadius="3" Background="{DynamicResource DayOffBgBrush}" BorderBrush="{DynamicResource DayOffBorderBrush}" BorderThickness="1" HorizontalAlignment="Left" />
+                                        <TextBlock Grid.Column="1" Text="Muaf" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                        <TextBlock Grid.Column="2" Text="İzinli (Gri)" FontSize="11.5" Foreground="{DynamicResource TextSecondaryBrush}" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Bottom SQLite Status Pill -->
+                            <Border Grid.Row="4"
+                                    Background="{DynamicResource DbStatusBgBrush}"
+                                    BorderBrush="{DynamicResource DbStatusBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="10,7">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Ellipse Width="7" Height="7" Fill="#43A047" Margin="0,0,8,0" />
+                                    <TextBlock x:Name="DbStatusText"
+                                               Text="SQLite: planner.db (0 KB)"
+                                               FontSize="11.5"
+                                               FontWeight="Medium"
+                                               Foreground="{DynamicResource DbStatusTextBrush}" />
+                                </StackPanel>
+                            </Border>
                         </Grid>
+                    </Border>
+
+                    <!-- Main Workspace Content Area -->
+                    <Grid Grid.Column="1" Margin="14">
+                        <!-- Takvim Dashboard View (Center: Calendar + Goal Summary | Right: Stopwatch + Live Analytics) -->
+                        <Grid x:Name="CalendarDashboardContainer" Visibility="Visible">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="14" />
+                                <ColumnDefinition Width="355" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Center Column: Calendar + Goal Summary -->
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" MinHeight="340" />
+                                    <RowDefinition Height="12" />
+                                    <RowDefinition Height="195" />
+                                </Grid.RowDefinitions>
+
+                                <views:CalendarView x:Name="CalendarViewControl" Grid.Row="0" />
+                                <views:GoalSummaryPanel x:Name="GoalSummaryControl" Grid.Row="2" />
+                            </Grid>
+
+                            <!-- Right Column: Stopwatch Widget + Live Compact Analytics -->
+                            <Grid Grid.Column="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="12" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <views:StopwatchControl x:Name="DashboardStopwatchControl" Grid.Row="0" />
+                                <views:AnalyticsView x:Name="DashboardAnalyticsControl" Grid.Row="2" IsCompactMode="True" />
+                            </Grid>
+                        </Grid>
+
+                        <!-- Hedef Yönetimi -->
+                        <views:GoalsView x:Name="GoalsViewControl" Visibility="Collapsed" />
+
+                        <!-- Kronometre ve Oturum Geçmişi -->
+                        <views:StopwatchView x:Name="StopwatchViewControl" Visibility="Collapsed" />
+
+                        <!-- Analiz Paneli ve İnteraktif Grafikler -->
+                        <views:AnalyticsView x:Name="FullAnalyticsViewControl" Visibility="Collapsed" IsCompactMode="False" />
+
+                        <!-- Ayarlar (Tema + Günlük Çalışma Saatleri) -->
+                        <views:SettingsView x:Name="SettingsViewControl" Visibility="Collapsed" />
                     </Grid>
-
-                    <!-- Stage 2: Hedef Yönetimi -->
-                    <views:GoalsView x:Name="GoalsViewControl" Visibility="Collapsed" />
-
-                    <!-- Stage 3: Kronometre ve Oturum Geçmişi -->
-                    <views:StopwatchView x:Name="StopwatchViewControl" Visibility="Collapsed" />
-
-                    <!-- Stage 5: Analiz Paneli ve İnteraktif Grafikler -->
-                    <views:AnalyticsView x:Name="FullAnalyticsViewControl" Visibility="Collapsed" IsCompactMode="False" />
-
-                    <!-- Stage 2: Günlük Çalışma Saat Ayarları -->
-                    <views:SettingsView x:Name="SettingsViewControl" Visibility="Collapsed" />
                 </Grid>
             </Grid>
         </Grid>

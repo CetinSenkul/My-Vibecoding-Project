@@ -25,8 +25,10 @@ public partial class CalendarView : UserControl
     private CalendarDisplayMode _currentMode = CalendarDisplayMode.Monthly;
     private DateTime _selectedDate = DateTime.Today;
     private bool _suppressComboEvents;
-    private bool _timelineBaseBuilt;
     private List<WorkSessionDetail> _currentDailySessions = [];
+
+    public int DisplayedMonth => _selectedDate.Month;
+    public event Action? DayOffsChanged;
 
     private static readonly string[] TurkishMonths =
     [
@@ -102,6 +104,9 @@ public partial class CalendarView : UserControl
             return;
         }
 
+        // Mevsimler teması aktifse görüntülenen aya göre mevsimi senkronize et
+        ThemeService.UpdateCalendarMonth(_selectedDate.Month);
+
         SyncMonthYearSelectors();
 
         MonthlyViewContainer.Visibility = _currentMode == CalendarDisplayMode.Monthly
@@ -111,7 +116,6 @@ public partial class CalendarView : UserControl
         DailyViewContainer.Visibility = _currentMode == CalendarDisplayMode.Daily
             ? Visibility.Visible : Visibility.Collapsed;
 
-        // Ay/Yıl seçicilerini Aylık görünümde belirgin, diğerlerinde de hızlı atlama için erişilebilir tut
         MonthComboBox.Visibility = Visibility.Visible;
         YearComboBox.Visibility = Visibility.Visible;
 
@@ -136,12 +140,13 @@ public partial class CalendarView : UserControl
         MonthlyDaysGrid.Children.Clear();
 
         var firstDayOfMonth = new DateTime(_selectedDate.Year, _selectedDate.Month, 1);
-        var offsetFromMonday = ((int)firstDayOfMonth.DayOfWeek + 6) % 7; // Pzt = 0 ... Paz = 6
+        var offsetFromMonday = ((int)firstDayOfMonth.DayOfWeek + 6) % 7;
         var gridStart = firstDayOfMonth.AddDays(-offsetFromMonday);
         var gridEnd = gridStart.AddDays(41);
 
         var targets = App.Database.GetDailyTargets();
         var dailyTotals = App.Database.GetDailyTotalSecondsByRange(gridStart, gridEnd);
+        var dayOffs = App.Database.GetDayOffsByRange(gridStart, gridEnd);
         var today = DateTime.Today;
 
         for (var i = 0; i < 42; i++)
@@ -155,8 +160,9 @@ public partial class CalendarView : UserControl
             var totalSeconds = dailyTotals.TryGetValue(dateKey, out var sec) ? sec : 0;
             var targetMinutes = targets.TryGetValue((int)cellDate.DayOfWeek, out var tm) ? tm : 120;
             var exactPercent = ColorScaleService.CalculateCompletionPercent(totalSeconds, targetMinutes);
+            dayOffs.TryGetValue(dateKey, out var dayOff);
 
-            var card = CreateMonthlyDayCell(cellDate, isCurrentMonth, isToday, isSelected, exactPercent, totalSeconds, targetMinutes);
+            var card = CreateMonthlyDayCell(cellDate, isCurrentMonth, isToday, isSelected, exactPercent, totalSeconds, targetMinutes, dayOff);
             MonthlyDaysGrid.Children.Add(card);
         }
     }
@@ -168,44 +174,60 @@ public partial class CalendarView : UserControl
         bool isSelected,
         double exactPercent,
         int totalSeconds,
-        int targetMinutes)
+        int targetMinutes,
+        DayOff? dayOff)
     {
+        var p = ThemeService.CurrentPalette;
+        var isDayOff = dayOff != null && isCurrentMonth;
         var displayPercent = totalSeconds > 0 && exactPercent < 1.0
             ? 1
             : (int)Math.Round(exactPercent);
         var colorInfo = ColorScaleService.GetColorInfo(exactPercent);
-        var hasWork = colorInfo.Tier != PerformanceTier.Zero;
+        var hasWork = !isDayOff && colorInfo.Tier != PerformanceTier.Zero;
 
-        Brush bgBrush = isCurrentMonth
-            ? colorInfo.CreateSurfaceBrush()
-            : new SolidColorBrush(Color.FromRgb(0x0E, 0x13, 0x1C));
-
+        Brush bgBrush;
         Brush borderBrush;
         if (!isCurrentMonth)
         {
-            borderBrush = new SolidColorBrush(Color.FromRgb(0x17, 0x20, 0x30));
+            bgBrush = ThemeService.Brush(p.BgMutedCell);
+            borderBrush = ThemeService.Brush(p.BorderSubtle);
         }
-        else if (hasWork)
+        else if (isDayOff)
         {
-            borderBrush = colorInfo.CreateBorderBrush();
-        }
-        else if (isToday)
-        {
-            borderBrush = new SolidColorBrush(Color.FromRgb(0x5B, 0x9B, 0xF8));
-        }
-        else if (isSelected)
-        {
-            borderBrush = new SolidColorBrush(Color.FromRgb(0x3B, 0x6C, 0xB7));
+            bgBrush = ThemeService.Brush(p.DayOffBg);
+            borderBrush = ThemeService.Brush(p.DayOffBorder);
         }
         else
         {
-            borderBrush = colorInfo.CreateBorderBrush(); // #283347 ince kenarlık
+            bgBrush = colorInfo.CreateSurfaceBrush();
+            if (hasWork)
+            {
+                borderBrush = colorInfo.CreateBorderBrush();
+            }
+            else if (isToday)
+            {
+                borderBrush = ThemeService.Brush(p.Accent);
+            }
+            else if (isSelected)
+            {
+                borderBrush = ThemeService.Brush(p.BorderActive);
+            }
+            else
+            {
+                borderBrush = colorInfo.CreateBorderBrush();
+            }
         }
 
         var borderThickness = isToday ? new Thickness(1.8) : new Thickness(1.1);
-        var ambientGlow = isCurrentMonth && (colorInfo.Tier >= PerformanceTier.Green || (isToday && hasWork))
+        var ambientGlow = isCurrentMonth && !isDayOff && (colorInfo.Tier >= PerformanceTier.Green || (isToday && hasWork))
             ? colorInfo.CreateGlowEffect(0.55)
             : null;
+
+        var tooltipText = isDayOff
+            ? $"{date.ToString("d MMMM yyyy, dddd", _trCulture)}\nİzinli Gün (Hedef Muaf)\nSebep: {dayOff!.Reason}\nSağ tık: İzni düzenle veya kaldır"
+            : $"{date.ToString("d MMMM yyyy, dddd", _trCulture)}\n" +
+              $"Hedef: {FormatMinutesReadable(targetMinutes)} • Çalışılan: {FormatDurationCompact(totalSeconds)} (%{displayPercent})\n" +
+              $"Durum: {colorInfo.TierLabel}\nSol tık: Günlük çizelge • Sağ tık: İzin günü işaretle";
 
         var border = new Border
         {
@@ -218,9 +240,8 @@ public partial class CalendarView : UserControl
             Cursor = Cursors.Hand,
             Tag = date,
             Effect = ambientGlow,
-            ToolTip = $"{date.ToString("d MMMM yyyy, dddd", _trCulture)}\n" +
-                      $"Hedef: {FormatMinutesReadable(targetMinutes)} • Çalışılan: {FormatDurationCompact(totalSeconds)} (%{displayPercent})\n" +
-                      $"Durum: {colorInfo.TierLabel}\nGünlük zaman çizelgesi için tıklayın"
+            ToolTip = tooltipText,
+            ContextMenu = BuildDayContextMenu(date, dayOff)
         };
 
         var rootGrid = new Grid();
@@ -228,7 +249,7 @@ public partial class CalendarView : UserControl
         rootGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         rootGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-        // Top row: Day Number + optional "Bugün" badge
+        // Top row: Day Number + Bugün or İzinli badge
         var topGrid = new Grid();
         topGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         topGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -238,19 +259,42 @@ public partial class CalendarView : UserControl
             Text = date.Day.ToString(),
             FontSize = 13.5,
             FontWeight = isCurrentMonth ? FontWeights.Bold : FontWeights.Normal,
-            Foreground = isCurrentMonth
-                ? new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC))
-                : new SolidColorBrush(Color.FromRgb(0x3D, 0x4B, 0x61))
+            Foreground = !isCurrentMonth
+                ? ThemeService.Brush(p.TextMuted)
+                : isDayOff
+                    ? ThemeService.Brush(p.DayOffText)
+                    : ThemeService.Brush(p.TextPrimary)
         };
         Grid.SetColumn(dayNumText, 0);
         topGrid.Children.Add(dayNumText);
 
-        if (isToday)
+        if (isDayOff)
+        {
+            var offBadge = new Border
+            {
+                Background = ThemeService.Brush(p.DayOffBadgeBg),
+                BorderBrush = ThemeService.Brush(p.DayOffBorder),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(5, 1, 5, 1),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            offBadge.Child = new TextBlock
+            {
+                Text = isToday ? "Bugün • İzin" : "İzinli",
+                FontSize = 9.5,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = ThemeService.Brush(p.DayOffText)
+            };
+            Grid.SetColumn(offBadge, 1);
+            topGrid.Children.Add(offBadge);
+        }
+        else if (isToday)
         {
             var todayBadge = new Border
             {
-                Background = new SolidColorBrush(Color.FromArgb(0xD8, 0x12, 0x1A, 0x29)),
-                BorderBrush = hasWork ? colorInfo.CreateBorderBrush() : new SolidColorBrush(Color.FromRgb(0x5B, 0x9B, 0xF8)),
+                Background = ThemeService.Brush(p.AccentSurface),
+                BorderBrush = hasWork ? colorInfo.CreateBorderBrush() : ThemeService.Brush(p.Accent),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(6, 1, 6, 2),
@@ -261,7 +305,7 @@ public partial class CalendarView : UserControl
                 Text = "Bugün",
                 FontSize = 10,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC))
+                Foreground = ThemeService.Brush(p.AccentText)
             };
             Grid.SetColumn(todayBadge, 1);
             topGrid.Children.Add(todayBadge);
@@ -270,39 +314,56 @@ public partial class CalendarView : UserControl
         Grid.SetRow(topGrid, 0);
         rootGrid.Children.Add(topGrid);
 
-        // Bottom row (for current month days): % and duration
+        // Bottom / Middle content for current month days
         if (isCurrentMonth)
         {
-            var bottomGrid = new Grid();
-            bottomGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            bottomGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-            var percentText = new TextBlock
+            if (isDayOff)
             {
-                Text = $"%{displayPercent}",
-                FontSize = 12,
-                FontWeight = FontWeights.Bold,
-                Foreground = hasWork
-                    ? new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC))
-                    : new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B))
-            };
-            Grid.SetColumn(percentText, 0);
-            bottomGrid.Children.Add(percentText);
-
-            var hoursText = new TextBlock
+                var reasonText = new TextBlock
+                {
+                    Text = dayOff!.Reason,
+                    FontSize = 11.5,
+                    FontWeight = FontWeights.SemiBold,
+                    Foreground = ThemeService.Brush(p.DayOffText),
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    VerticalAlignment = VerticalAlignment.Bottom
+                };
+                Grid.SetRow(reasonText, 2);
+                rootGrid.Children.Add(reasonText);
+            }
+            else
             {
-                Text = FormatHoursShort(totalSeconds),
-                FontSize = 11.5,
-                FontWeight = hasWork ? FontWeights.SemiBold : FontWeights.Normal,
-                Foreground = hasWork
-                    ? colorInfo.CreateAccentTextBrush()
-                    : new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B))
-            };
-            Grid.SetColumn(hoursText, 1);
-            bottomGrid.Children.Add(hoursText);
+                var bottomGrid = new Grid();
+                bottomGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                bottomGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            Grid.SetRow(bottomGrid, 2);
-            rootGrid.Children.Add(bottomGrid);
+                var percentText = new TextBlock
+                {
+                    Text = $"%{displayPercent}",
+                    FontSize = 12,
+                    FontWeight = FontWeights.Bold,
+                    Foreground = hasWork
+                        ? (p.IsLight ? colorInfo.CreateAccentTextBrush() : ThemeService.Brush(p.TextPrimary))
+                        : ThemeService.Brush(p.TextSecondary)
+                };
+                Grid.SetColumn(percentText, 0);
+                bottomGrid.Children.Add(percentText);
+
+                var hoursText = new TextBlock
+                {
+                    Text = FormatHoursShort(totalSeconds),
+                    FontSize = 11.5,
+                    FontWeight = hasWork ? FontWeights.SemiBold : FontWeights.Normal,
+                    Foreground = hasWork
+                        ? colorInfo.CreateAccentTextBrush()
+                        : ThemeService.Brush(p.TextSecondary)
+                };
+                Grid.SetColumn(hoursText, 1);
+                bottomGrid.Children.Add(hoursText);
+
+                Grid.SetRow(bottomGrid, 2);
+                rootGrid.Children.Add(bottomGrid);
+            }
         }
 
         border.Child = rootGrid;
@@ -317,7 +378,7 @@ public partial class CalendarView : UserControl
             }
             else if (!isToday)
             {
-                border.BorderBrush = new SolidColorBrush(Color.FromRgb(0x5B, 0x9B, 0xF8));
+                border.BorderBrush = ThemeService.Brush(p.Accent);
             }
         };
         border.MouseLeave += (_, _) =>
@@ -356,6 +417,7 @@ public partial class CalendarView : UserControl
 
         var targets = App.Database.GetDailyTargets();
         var dailyTotals = App.Database.GetDailyTotalSecondsByRange(weekStart, weekEnd);
+        var dayOffs = App.Database.GetDayOffsByRange(weekStart, weekEnd);
         var weekSessionsByDate = App.Database
             .GetSessionDetailsForDateRange(weekStart, weekEnd)
             .GroupBy(s => s.SessionDate)
@@ -371,6 +433,7 @@ public partial class CalendarView : UserControl
             var targetMinutes = targets.TryGetValue((int)dayDate.DayOfWeek, out var tm) ? tm : 120;
             var exactPercent = ColorScaleService.CalculateCompletionPercent(totalSeconds, targetMinutes);
             var daySessions = weekSessionsByDate.TryGetValue(dateKey, out var list) ? list : [];
+            dayOffs.TryGetValue(dateKey, out var dayOff);
 
             WeeklyDaysGrid.Children.Add(CreateWeeklyDayColumn(
                 dayDate,
@@ -379,7 +442,8 @@ public partial class CalendarView : UserControl
                 exactPercent,
                 totalSeconds,
                 targetMinutes,
-                daySessions));
+                daySessions,
+                dayOff));
         }
     }
 
@@ -390,32 +454,39 @@ public partial class CalendarView : UserControl
         double exactPercent,
         int totalSeconds,
         int targetMinutes,
-        List<WorkSessionDetail> sessions)
+        List<WorkSessionDetail> sessions,
+        DayOff? dayOff)
     {
+        var p = ThemeService.CurrentPalette;
+        var isDayOff = dayOff != null;
         var displayPercent = totalSeconds > 0 && exactPercent < 1.0
             ? 1
             : (int)Math.Round(exactPercent);
         var colorInfo = ColorScaleService.GetColorInfo(exactPercent);
-        var hasWork = colorInfo.Tier != PerformanceTier.Zero;
+        var hasWork = !isDayOff && colorInfo.Tier != PerformanceTier.Zero;
 
-        Brush defaultBorderBrush = hasWork
-            ? colorInfo.CreateBorderBrush()
-            : isToday
-                ? new SolidColorBrush(Color.FromRgb(0x5B, 0x9B, 0xF8))
-                : colorInfo.CreateBorderBrush();
+        Brush bgBrush = isDayOff ? ThemeService.Brush(p.DayOffBg) : colorInfo.CreateSurfaceBrush();
+        Brush defaultBorderBrush = isDayOff
+            ? ThemeService.Brush(p.DayOffBorder)
+            : hasWork
+                ? colorInfo.CreateBorderBrush()
+                : isToday
+                    ? ThemeService.Brush(p.Accent)
+                    : colorInfo.CreateBorderBrush();
 
         var ambientGlow = hasWork ? colorInfo.CreateGlowEffect(0.65) : null;
 
         var card = new Border
         {
-            Background = colorInfo.CreateSurfaceBrush(),
+            Background = bgBrush,
             BorderBrush = defaultBorderBrush,
             BorderThickness = isToday ? new Thickness(1.8) : new Thickness(1.1),
             CornerRadius = new CornerRadius(10),
             Margin = new Thickness(4, 4, 4, 4),
             Padding = new Thickness(12),
             Cursor = Cursors.Hand,
-            Effect = ambientGlow
+            Effect = ambientGlow,
+            ContextMenu = BuildDayContextMenu(date, dayOff)
         };
 
         var grid = new Grid();
@@ -424,7 +495,6 @@ public partial class CalendarView : UserControl
         grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-        // Header: Day name & Today pill
         var headerStack = new StackPanel();
         var topRow = new Grid();
         topRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -435,9 +505,11 @@ public partial class CalendarView : UserControl
             Text = dayName,
             FontSize = 13,
             FontWeight = FontWeights.SemiBold,
-            Foreground = isToday
-                ? new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD))
-                : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8))
+            Foreground = isDayOff
+                ? ThemeService.Brush(p.DayOffText)
+                : isToday
+                    ? ThemeService.Brush(p.AccentText)
+                    : ThemeService.Brush(p.TextSecondary)
         };
         Grid.SetColumn(dayNameText, 0);
         topRow.Children.Add(dayNameText);
@@ -446,8 +518,8 @@ public partial class CalendarView : UserControl
         {
             var badge = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x3A, 0x5F)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(0x5B, 0x9B, 0xF8)),
+                Background = ThemeService.Brush(p.AccentSurface),
+                BorderBrush = ThemeService.Brush(p.Accent),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(4),
                 Padding = new Thickness(5, 1, 5, 1)
@@ -457,31 +529,29 @@ public partial class CalendarView : UserControl
                 Text = "Bugün",
                 FontSize = 10,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(0xBF, 0xDB, 0xFE))
+                Foreground = ThemeService.Brush(p.AccentText)
             };
             Grid.SetColumn(badge, 1);
             topRow.Children.Add(badge);
         }
 
         headerStack.Children.Add(topRow);
-
         headerStack.Children.Add(new TextBlock
         {
             Text = $"{date.Day} {TurkishMonths[date.Month - 1][..3]}",
             FontSize = 20,
             FontWeight = FontWeights.Bold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC)),
+            Foreground = isDayOff ? ThemeService.Brush(p.DayOffText) : ThemeService.Brush(p.TextPrimary),
             Margin = new Thickness(0, 4, 0, 10)
         });
-
         Grid.SetRow(headerStack, 0);
         grid.Children.Add(headerStack);
 
-        // Divider + Target Info
+        // Info box
         var infoBorder = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x16, 0x1E, 0x2E)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x23, 0x30, 0x45)),
+            Background = ThemeService.Brush(isDayOff ? p.DayOffBadgeBg : p.BgCard),
+            BorderBrush = ThemeService.Brush(isDayOff ? p.DayOffBorder : p.BorderSubtle),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(7),
             Padding = new Thickness(8, 6, 8, 6),
@@ -490,34 +560,70 @@ public partial class CalendarView : UserControl
         var infoStack = new StackPanel();
         infoStack.Children.Add(new TextBlock
         {
-            Text = $"Hedef: {FormatMinutesReadable(targetMinutes)}",
+            Text = isDayOff ? "Hedef: Muaf (İzinli)" : $"Hedef: {FormatMinutesReadable(targetMinutes)}",
             FontSize = 11.5,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8))
+            Foreground = ThemeService.Brush(isDayOff ? p.DayOffText : p.TextSecondary)
         });
         infoStack.Children.Add(new TextBlock
         {
             Text = $"Gerçekleşen: {FormatHoursShort(totalSeconds)}",
             FontSize = 11.5,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE8, 0xF0)),
+            Foreground = ThemeService.Brush(isDayOff ? p.DayOffText : p.TextPrimary),
             Margin = new Thickness(0, 2, 0, 0)
         });
         infoBorder.Child = infoStack;
         Grid.SetRow(infoBorder, 1);
         grid.Children.Add(infoBorder);
 
-        // Middle area: Compact session chips
+        // Middle content: DayOff banner or session chips
         var centerPanel = new StackPanel
         {
-            VerticalAlignment = sessions.Count == 0 ? VerticalAlignment.Center : VerticalAlignment.Top
+            VerticalAlignment = (isDayOff || sessions.Count == 0) ? VerticalAlignment.Center : VerticalAlignment.Top
         };
-        if (sessions.Count == 0)
+
+        if (isDayOff)
+        {
+            centerPanel.Children.Add(new Border
+            {
+                Background = ThemeService.Brush(p.DayOffBadgeBg),
+                BorderBrush = ThemeService.Brush(p.DayOffBorder),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(8, 8, 8, 8),
+                Child = new StackPanel
+                {
+                    Children =
+                    {
+                        new TextBlock
+                        {
+                            Text = "İZİNLİ GÜN",
+                            FontSize = 10,
+                            FontWeight = FontWeights.Bold,
+                            Foreground = ThemeService.Brush(p.DayOffText),
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        },
+                        new TextBlock
+                        {
+                            Text = dayOff!.Reason,
+                            FontSize = 12.5,
+                            FontWeight = FontWeights.SemiBold,
+                            Foreground = ThemeService.Brush(p.DayOffText),
+                            TextAlignment = TextAlignment.Center,
+                            TextWrapping = TextWrapping.Wrap,
+                            Margin = new Thickness(0, 4, 0, 0)
+                        }
+                    }
+                }
+            });
+        }
+        else if (sessions.Count == 0)
         {
             centerPanel.Children.Add(new TextBlock
             {
                 Text = "Oturum yok",
                 FontSize = 11.5,
-                Foreground = new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69)),
+                Foreground = ThemeService.Brush(p.TextMuted),
                 HorizontalAlignment = HorizontalAlignment.Center
             });
         }
@@ -530,8 +636,8 @@ public partial class CalendarView : UserControl
                 var chip = new Border
                 {
                     Background = isTask
-                        ? new SolidColorBrush(Color.FromRgb(0x14, 0x33, 0x22))
-                        : new SolidColorBrush(Color.FromRgb(0x14, 0x28, 0x45)),
+                        ? new SolidColorBrush(p.IsLight ? Color.FromRgb(0xDC, 0xFC, 0xE7) : Color.FromRgb(0x14, 0x33, 0x22))
+                        : new SolidColorBrush(p.IsLight ? Color.FromRgb(0xDB, 0xEA, 0xFE) : Color.FromRgb(0x14, 0x28, 0x45)),
                     BorderBrush = isTask
                         ? new SolidColorBrush(Color.FromRgb(0x2E, 0x7D, 0x4B))
                         : new SolidColorBrush(Color.FromRgb(0x2B, 0x56, 0x94)),
@@ -547,7 +653,7 @@ public partial class CalendarView : UserControl
                     Text = session.GoalTitle,
                     FontSize = 11,
                     FontWeight = FontWeights.SemiBold,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0xE2, 0xE8, 0xF0)),
+                    Foreground = ThemeService.Brush(p.TextPrimary),
                     TextTrimming = TextTrimming.CharacterEllipsis
                 });
 
@@ -556,7 +662,7 @@ public partial class CalendarView : UserControl
                 {
                     Text = $"{startShort} • {FormatDurationCompact(session.DurationSeconds)}",
                     FontSize = 10,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8))
+                    Foreground = ThemeService.Brush(p.TextSecondary)
                 });
                 chip.Child = chipStack;
                 centerPanel.Children.Add(chip);
@@ -568,7 +674,7 @@ public partial class CalendarView : UserControl
                 {
                     Text = $"+{sessions.Count - maxVisibleChips} oturum daha",
                     FontSize = 10.5,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0x93, 0xC5, 0xFD)),
+                    Foreground = ThemeService.Brush(p.AccentText),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Margin = new Thickness(0, 2, 0, 0)
                 });
@@ -577,10 +683,10 @@ public partial class CalendarView : UserControl
         Grid.SetRow(centerPanel, 2);
         grid.Children.Add(centerPanel);
 
-        // Footer: Completion %
+        // Footer
         var footerBorder = new Border
         {
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x1F, 0x2A, 0x3C)),
+            BorderBrush = ThemeService.Brush(isDayOff ? p.DayOffBorder : p.BorderSubtle),
             BorderThickness = new Thickness(0, 1, 0, 0),
             Padding = new Thickness(0, 8, 0, 0)
         };
@@ -590,19 +696,21 @@ public partial class CalendarView : UserControl
 
         footerGrid.Children.Add(new TextBlock
         {
-            Text = "Tamamlanma",
+            Text = isDayOff ? "Durum" : "Tamamlanma",
             FontSize = 11,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B))
+            Foreground = ThemeService.Brush(isDayOff ? p.DayOffText : p.TextSecondary)
         });
 
         var pctBlock = new TextBlock
         {
-            Text = $"%{displayPercent}",
+            Text = isDayOff ? "Muaf" : $"%{displayPercent}",
             FontSize = 13.5,
             FontWeight = FontWeights.Bold,
-            Foreground = hasWork
-                ? colorInfo.CreateAccentTextBrush()
-                : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8))
+            Foreground = isDayOff
+                ? ThemeService.Brush(p.DayOffText)
+                : hasWork
+                    ? colorInfo.CreateAccentTextBrush()
+                    : ThemeService.Brush(p.TextSecondary)
         };
         Grid.SetColumn(pctBlock, 1);
         footerGrid.Children.Add(pctBlock);
@@ -622,7 +730,7 @@ public partial class CalendarView : UserControl
             }
             else if (!isToday)
             {
-                card.BorderBrush = new SolidColorBrush(Color.FromRgb(0x5B, 0x9B, 0xF8));
+                card.BorderBrush = ThemeService.Brush(p.Accent);
             }
         };
         card.MouseLeave += (_, _) =>
@@ -639,19 +747,84 @@ public partial class CalendarView : UserControl
         return card;
     }
 
-    private void BuildDailyTimelineSkeleton()
+    private ContextMenu BuildDayContextMenu(DateTime date, DayOff? existingDayOff)
     {
-        if (_timelineBaseBuilt)
+        var menu = new ContextMenu();
+
+        var openDailyItem = new MenuItem { Header = "Günlük Zaman Çizelgesini Aç" };
+        openDailyItem.Click += (_, _) =>
+        {
+            _selectedDate = date;
+            SwitchToMode(CalendarDisplayMode.Daily);
+        };
+        menu.Items.Add(openDailyItem);
+
+        if (existingDayOff == null)
+        {
+            var markOffItem = new MenuItem { Header = "İzin Günü Olarak İşaretle..." };
+            markOffItem.Click += (_, _) => OpenDayOffDialog(date, null);
+            menu.Items.Add(markOffItem);
+        }
+        else
+        {
+            var editOffItem = new MenuItem { Header = $"İzin Sebebini Düzenle ({existingDayOff.Reason})..." };
+            editOffItem.Click += (_, _) => OpenDayOffDialog(date, existingDayOff.Reason);
+            menu.Items.Add(editOffItem);
+
+            var removeOffItem = new MenuItem { Header = "İzni Kaldır" };
+            removeOffItem.Click += (_, _) =>
+            {
+                App.Database.RemoveDayOff(date);
+                RefreshCalendar();
+                DayOffsChanged?.Invoke();
+            };
+            menu.Items.Add(removeOffItem);
+        }
+
+        return menu;
+    }
+
+    private void OpenDayOffDialog(DateTime date, string? existingReason)
+    {
+        var dialog = new DayOffDialog(date, existingReason)
+        {
+            Owner = Window.GetWindow(this)
+        };
+
+        if (dialog.ShowDialog() != true)
         {
             return;
         }
 
+        if (dialog.ResultAction == DayOffDialogAction.Save)
+        {
+            App.Database.SetDayOff(date, dialog.ReasonText);
+            RefreshCalendar();
+            DayOffsChanged?.Invoke();
+        }
+        else if (dialog.ResultAction == DayOffDialogAction.Remove)
+        {
+            App.Database.RemoveDayOff(date);
+            RefreshCalendar();
+            DayOffsChanged?.Invoke();
+        }
+    }
+
+    private void DailyDayOffButton_Click(object sender, RoutedEventArgs e)
+    {
+        var existing = App.Database.GetDayOff(_selectedDate);
+        OpenDayOffDialog(_selectedDate, existing?.Reason);
+    }
+
+    private void BuildDailyTimelineSkeleton()
+    {
+        var p = ThemeService.CurrentPalette;
         TimelineHoursCanvas.Children.Clear();
         TimelineGridLinesCanvas.Children.Clear();
 
-        var hourTextBrush = new SolidColorBrush(Color.FromRgb(0x64, 0x74, 0x8B));
-        var hourLineBrush = new SolidColorBrush(Color.FromRgb(0x1E, 0x2A, 0x3D));
-        var halfHourLineBrush = new SolidColorBrush(Color.FromRgb(0x15, 0x1E, 0x2E));
+        var hourTextBrush = ThemeService.Brush(p.TextSecondary);
+        var hourLineBrush = ThemeService.Brush(p.BorderSubtle);
+        var halfHourLineBrush = new SolidColorBrush(Color.FromArgb(0x55, p.BorderSubtle.R, p.BorderSubtle.G, p.BorderSubtle.B));
 
         for (var hour = 0; hour < 24; hour++)
         {
@@ -668,64 +841,40 @@ public partial class CalendarView : UserControl
             Canvas.SetTop(label, y - 8);
             TimelineHoursCanvas.Children.Add(label);
 
-            var hourLine = new Border
-            {
-                Height = 1,
-                Background = hourLineBrush
-            };
-            hourLine.SetBinding(WidthProperty, new System.Windows.Data.Binding("ActualWidth")
-            {
-                Source = TimelineGridLinesCanvas
-            });
+            var hourLine = new Border { Height = 1, Background = hourLineBrush };
+            hourLine.SetBinding(WidthProperty, new System.Windows.Data.Binding("ActualWidth") { Source = TimelineGridLinesCanvas });
             Canvas.SetTop(hourLine, y);
             TimelineGridLinesCanvas.Children.Add(hourLine);
 
-            // Yarım saat çizgisi
-            var halfLine = new Border
-            {
-                Height = 1,
-                Background = halfHourLineBrush
-            };
-            halfLine.SetBinding(WidthProperty, new System.Windows.Data.Binding("ActualWidth")
-            {
-                Source = TimelineGridLinesCanvas
-            });
+            var halfLine = new Border { Height = 1, Background = halfHourLineBrush };
+            halfLine.SetBinding(WidthProperty, new System.Windows.Data.Binding("ActualWidth") { Source = TimelineGridLinesCanvas });
             Canvas.SetTop(halfLine, y + PixelsPerHour / 2.0);
             TimelineGridLinesCanvas.Children.Add(halfLine);
         }
 
-        // 23:59 bitiş çizgisi ve etiketi
         var endY = TimelineTopPadding + 24 * PixelsPerHour;
         var endLabel = new TextBlock
         {
             Text = "23:59",
             FontSize = 11,
             FontWeight = FontWeights.Medium,
-            Foreground = new SolidColorBrush(Color.FromRgb(0x47, 0x55, 0x69))
+            Foreground = ThemeService.Brush(p.TextMuted)
         };
         Canvas.SetLeft(endLabel, 8);
         Canvas.SetTop(endLabel, endY - 8);
         TimelineHoursCanvas.Children.Add(endLabel);
 
-        var endLine = new Border
-        {
-            Height = 1,
-            Background = hourLineBrush
-        };
-        endLine.SetBinding(WidthProperty, new System.Windows.Data.Binding("ActualWidth")
-        {
-            Source = TimelineGridLinesCanvas
-        });
+        var endLine = new Border { Height = 1, Background = hourLineBrush };
+        endLine.SetBinding(WidthProperty, new System.Windows.Data.Binding("ActualWidth") { Source = TimelineGridLinesCanvas });
         Canvas.SetTop(endLine, endY);
         TimelineGridLinesCanvas.Children.Add(endLine);
-
-        _timelineBaseBuilt = true;
     }
 
     private void RenderDailyView()
     {
         BuildDailyTimelineSkeleton();
 
+        var p = ThemeService.CurrentPalette;
         var formattedFull = _selectedDate.ToString("d MMMM yyyy, dddd", _trCulture);
         HeaderTitleText.Text = $"{_selectedDate.Day} {TurkishMonths[_selectedDate.Month - 1]} {_selectedDate.Year}";
         DailySummaryDateText.Text = formattedFull;
@@ -733,28 +882,43 @@ public partial class CalendarView : UserControl
         var isToday = _selectedDate.Date == DateTime.Today;
         DailyTodayBadge.Visibility = isToday ? Visibility.Visible : Visibility.Collapsed;
 
+        var dayOff = App.Database.GetDayOff(_selectedDate);
         var targetMinutes = App.Database.GetDailyTargetMinutes(_selectedDate.DayOfWeek);
         _currentDailySessions = App.Database.GetSessionDetailsForDate(_selectedDate);
         var totalSeconds = _currentDailySessions.Sum(s => s.DurationSeconds);
-        var exactPercent = ColorScaleService.CalculateCompletionPercent(totalSeconds, targetMinutes);
-        var displayPercent = totalSeconds > 0 && exactPercent < 1.0
-            ? 1
-            : (int)Math.Round(exactPercent);
-        var dayColorInfo = ColorScaleService.GetColorInfo(exactPercent);
 
-        DailyTargetInfoText.Text = $"Günlük Hedef: {FormatMinutesReadable(targetMinutes)}";
-        DailyProgressInfoText.Text = $"Çalışılan: {FormatDurationCompact(totalSeconds)} (%{displayPercent})";
-        DailyProgressInfoText.Foreground = dayColorInfo.Tier == PerformanceTier.Zero
-            ? new SolidColorBrush(Color.FromRgb(0xCB, 0xD5, 0xE1))
-            : dayColorInfo.CreateAccentTextBrush();
-        DailyProgressBadge.Background = dayColorInfo.CreateSurfaceBrush();
-        DailyProgressBadge.BorderBrush = dayColorInfo.CreateBorderBrush();
-        DailyProgressBadge.Effect = dayColorInfo.CreateGlowEffect(0.7);
+        if (dayOff != null)
+        {
+            DailyTargetInfoText.Text = "Günlük Hedef: Muaf (İzinli)";
+            DailyProgressInfoText.Text = $"İzinli • {dayOff.Reason}";
+            DailyProgressInfoText.Foreground = ThemeService.Brush(p.DayOffText);
+            DailyProgressBadge.Background = ThemeService.Brush(p.DayOffBg);
+            DailyProgressBadge.BorderBrush = ThemeService.Brush(p.DayOffBorder);
+            DailyProgressBadge.Effect = null;
+            DailyDayOffButton.Content = "İzni Düzenle";
+        }
+        else
+        {
+            var exactPercent = ColorScaleService.CalculateCompletionPercent(totalSeconds, targetMinutes);
+            var displayPercent = totalSeconds > 0 && exactPercent < 1.0
+                ? 1
+                : (int)Math.Round(exactPercent);
+            var dayColorInfo = ColorScaleService.GetColorInfo(exactPercent);
+
+            DailyTargetInfoText.Text = $"Günlük Hedef: {FormatMinutesReadable(targetMinutes)}";
+            DailyProgressInfoText.Text = $"Çalışılan: {FormatDurationCompact(totalSeconds)} (%{displayPercent})";
+            DailyProgressInfoText.Foreground = dayColorInfo.Tier == PerformanceTier.Zero
+                ? ThemeService.Brush(p.TextPrimary)
+                : dayColorInfo.CreateAccentTextBrush();
+            DailyProgressBadge.Background = dayColorInfo.CreateSurfaceBrush();
+            DailyProgressBadge.BorderBrush = dayColorInfo.CreateBorderBrush();
+            DailyProgressBadge.Effect = dayColorInfo.CreateGlowEffect(0.7);
+            DailyDayOffButton.Content = "İzin Günü İşaretle";
+        }
 
         LayoutDailySessionBlocks();
         UpdateCurrentTimeIndicator();
 
-        // Bugünse anlık saate, değilse ilk oturum veya 08:00 civarına kaydır (layout ölçüldükten sonra)
         var defaultHour = 8;
         if (isToday)
         {
@@ -787,7 +951,6 @@ public partial class CalendarView : UserControl
             return;
         }
 
-        // Her oturum için başlangıç ve görsel bitiş (dakika) hesapla
         var items = new List<(WorkSessionDetail Session, double StartMin, double EndMin, int Col)>();
         foreach (var s in _currentDailySessions)
         {
@@ -802,7 +965,6 @@ public partial class CalendarView : UserControl
             items.Add((s, startMin, endMin, 0));
         }
 
-        // Çakışan blokları yan yana sütunlara yerleştir
         var colEndTimes = new List<double>();
         for (var i = 0; i < items.Count; i++)
         {
@@ -835,7 +997,6 @@ public partial class CalendarView : UserControl
         {
             var item = items[i];
 
-            // Bu blokla örtüşen maksimum sütun sayısını bul
             var maxColInGroup = item.Col;
             for (var j = 0; j < items.Count; j++)
             {
@@ -864,16 +1025,18 @@ public partial class CalendarView : UserControl
 
     private static Border CreateDailySessionBlock(WorkSessionDetail session, double width, double height)
     {
+        var isLight = ThemeService.IsLightTheme;
         var isTask = session.GoalType == "Task";
         var bgBrush = isTask
-            ? new SolidColorBrush(Color.FromArgb(0xE6, 0x16, 0x3D, 0x26))
-            : new SolidColorBrush(Color.FromArgb(0xE6, 0x16, 0x31, 0x57));
+            ? new SolidColorBrush(isLight ? Color.FromArgb(0xEE, 0xDC, 0xFC, 0xE7) : Color.FromArgb(0xE6, 0x16, 0x3D, 0x26))
+            : new SolidColorBrush(isLight ? Color.FromArgb(0xEE, 0xDB, 0xEA, 0xFE) : Color.FromArgb(0xE6, 0x16, 0x31, 0x57));
         var borderBrush = isTask
             ? new SolidColorBrush(Color.FromRgb(0x43, 0xA0, 0x47))
-            : new SolidColorBrush(Color.FromRgb(0x5B, 0x9B, 0xF8));
+            : new SolidColorBrush(Color.FromRgb(0x3B, 0x82, 0xF6));
+        var titleBrush = ThemeService.Brush(ThemeService.CurrentPalette.TextPrimary);
         var subTextBrush = isTask
-            ? new SolidColorBrush(Color.FromRgb(0xA7, 0xF3, 0xD0))
-            : new SolidColorBrush(Color.FromRgb(0xBF, 0xDB, 0xFE));
+            ? new SolidColorBrush(isLight ? Color.FromRgb(0x16, 0x65, 0x34) : Color.FromRgb(0xA7, 0xF3, 0xD0))
+            : new SolidColorBrush(isLight ? Color.FromRgb(0x1E, 0x40, 0xAF) : Color.FromRgb(0xBF, 0xDB, 0xFE));
 
         var startShort = session.StartTime.Length >= 5 ? session.StartTime[..5] : session.StartTime;
         var endShort = session.EndTime.Length >= 5 ? session.EndTime[..5] : session.EndTime;
@@ -899,7 +1062,7 @@ public partial class CalendarView : UserControl
                 Text = session.GoalTitle,
                 FontSize = 12,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC)),
+                Foreground = titleBrush,
                 TextTrimming = TextTrimming.CharacterEllipsis
             });
             stack.Children.Add(new TextBlock
@@ -923,7 +1086,7 @@ public partial class CalendarView : UserControl
                 Text = session.GoalTitle,
                 FontSize = 11.5,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(Color.FromRgb(0xF8, 0xFA, 0xFC)),
+                Foreground = titleBrush,
                 VerticalAlignment = VerticalAlignment.Center,
                 TextTrimming = TextTrimming.CharacterEllipsis
             };
@@ -961,36 +1124,25 @@ public partial class CalendarView : UserControl
             return;
         }
 
+        var p = ThemeService.CurrentPalette;
         var now = DateTime.Now;
         var minutesFromMidnight = now.Hour * 60.0 + now.Minute + now.Second / 60.0;
         var y = TimelineTopPadding + minutesFromMidnight;
 
-        var line = new Border
-        {
-            Height = 2,
-            Background = new SolidColorBrush(Color.FromRgb(0x5B, 0x9B, 0xF8))
-        };
-        line.SetBinding(WidthProperty, new System.Windows.Data.Binding("ActualWidth")
-        {
-            Source = CurrentTimeCanvas
-        });
+        var line = new Border { Height = 2, Background = ThemeService.Brush(p.Accent) };
+        line.SetBinding(WidthProperty, new System.Windows.Data.Binding("ActualWidth") { Source = CurrentTimeCanvas });
         Canvas.SetTop(line, y);
         CurrentTimeCanvas.Children.Add(line);
 
-        var dot = new Ellipse
-        {
-            Width = 9,
-            Height = 9,
-            Fill = new SolidColorBrush(Color.FromRgb(0x5B, 0x9B, 0xF8))
-        };
+        var dot = new Ellipse { Width = 9, Height = 9, Fill = ThemeService.Brush(p.Accent) };
         Canvas.SetLeft(dot, -4);
         Canvas.SetTop(dot, y - 3.5);
         CurrentTimeCanvas.Children.Add(dot);
 
         var timePill = new Border
         {
-            Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x3A, 0x5F)),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x5B, 0x9B, 0xF8)),
+            Background = ThemeService.Brush(p.AccentSurface),
+            BorderBrush = ThemeService.Brush(p.Accent),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(4),
             Padding = new Thickness(6, 1, 6, 2)
@@ -1000,7 +1152,7 @@ public partial class CalendarView : UserControl
             Text = now.ToString("HH:mm"),
             FontSize = 10.5,
             FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xF2, 0xFE))
+            Foreground = ThemeService.Brush(p.AccentText)
         };
         Canvas.SetLeft(timePill, 10);
         Canvas.SetTop(timePill, y - 10);
