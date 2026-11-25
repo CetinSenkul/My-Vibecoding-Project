@@ -1,0 +1,409 @@
+{
+  "app": {
+    "name": "StoryStudio",
+    "tagline": "AI-Assisted Book Writing Studio",
+    "phaseBadge": "Phase 2 · SQLite Active",
+    "noProjectSelected": "No Active Book",
+    "createOrSelectProject": "Create or select a book project"
+  },
+  "nav": {
+    "workspaceGroup": "STORY WORKSPACE",
+    "systemGroup": "SYSTEM",
+    "world": "World",
+    "characters": "Characters",
+    "arc-board": "Arc Board",
+    "chapters": "Chapters",
+    "translation": "Translation & Glossary",
+    "settings": "Settings"
+  },
+  "topbar": {
+    "language": "Language",
+    "theme": "Theme",
+    "selectBook": "Select Book"
+  },
+  "projects": {
+    "modalTitle": "Book Projects",
+    "modalSubtitle": "Your projects are persisted locally inside story_studio.db.",
+    "yourBooks": "Your Books",
+    "emptyTitle": "No book projects yet",
+    "emptySubtitle": "Create your first book using the form on the right.",
+    "activeBadge": "Active",
+    "createHeading": "Create New Book",
+    "titleLabel": "Book Title",
+    "titlePlaceholder": "e.g., Chronicles of the Shadow Spire",
+    "genreLabel": "Genre (Optional)",
+    "genrePlaceholder": "e.g., Epic Fantasy, Sci-Fi, Mystery",
+    "summaryLabel": "Brief World Premise (Optional)",
+    "summaryPlaceholder": "A short summary of your story's world...",
+    "createButton": "Create Book",
+    "titleRequired": "Please enter a book title.",
+    "createError": "An error occurred while creating the book.",
+    "delete": "Delete Project",
+    "confirmDelete": "Delete",
+    "cancel": "Cancel",
+    "close": "Close",
+    "switchButton": "Switch"
+  },
+  "themes": {
+    "dark": {
+      "name": "Dark",
+      "description": "Restful matte dark palette designed for long writing sessions."
+    },
+    "light": {
+      "name": "Light",
+      "description": "Clean warm off-white paper canvas for bright daytime writing."
+    },
+    "space": {
+      "name": "Space",
+      "description": "Deep cosmic navy, nebula violet glow, and crisp starlight accents."
+    },
+    "fantasy": {
+      "name": "Fantasy",
+      "description": "Parchment paper, burnished gold, deep burgundy, and emerald tones."
+    }
+  },
+  "languages": {
+    "tr": "Türkçe",
+    "en": "English"
+  },
+  "sections": {
+    "world": {
+      "title": "Story Worldbuilding",
+      "subtitle": "Shape your universe genre, summary, fundamental laws, magic/power systems, and factions.",
+      "plannedPhase": "Phase 4",
+      "highlights": [
+        "Story genre and comprehensive world overview",
+        "Structured universe rules, magic/power systems, and factions",
+        "Automatic SHA-256 content hashing (WorldHash) for token-saving delta sync"
+      ]
+    },
+    "characters": {
+      "title": "Character System",
+      "subtitle": "Standard profiles, alignment slider, dynamic custom sub-modules, and chronological progression logs.",
+      "plannedPhase": "Phase 4",
+      "highlights": [
+        "Interactive 0–100 Alignment Slider (Evil / Gray / Good)",
+        "Dynamic 'Add to Character' nested lists (Pets, Magical Items, Companions)",
+        "Append-only chronological Character History with chapter references"
+      ]
+    },
+    "arc-board": {
+      "title": "Infinite Arc Board",
+      "subtitle": "Plot story arcs visually on an unbounded 2D canvas with event cards, notes, and directional arrows.",
+      "plannedPhase": "Phase 6",
+      "highlights": [
+        "Infinite 2D pan & zoom powered by React Flow",
+        "Event cards, sticky notes, and directional connections",
+        "Clean detail modal for reading and editing long-form card notes"
+      ]
+    },
+    "chapters": {
+      "title": "Chapters & Draft Editor",
+      "subtitle": "Structured chapter slots, dedicated draft notes, compressed storage, and the 5-step AI writing engine.",
+      "plannedPhase": "Phase 5 & 7",
+      "highlights": [
+        "Per-chapter Draft, Main Text, and Translated Texts tabs",
+        "Zstd/Gzip compressed BLOB storage for ultra-compact local manuscripts",
+        "Approval-locked 5-step AI writing flow with 20 styles & 10 registers"
+      ]
+    },
+    "translation": {
+      "title": "Translation & Technical Glossary",
+      "subtitle": "Flexible source → target language translation guided by your lore-specific glossary rules.",
+      "plannedPhase": "Phase 8",
+      "highlights": [
+        "Flexible source → target language pairs (TR ↔ EN and beyond)",
+        "Two-column Technical Terms Glossary (Term | Description & usage rules)",
+        "Per-chapter compressed translation archive"
+      ]
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Manage application language, visual theme, local database status, and AI provider preferences."
+    }
+  },
+  "placeholder": {
+    "upcomingBadge": "Planned Module",
+    "keyCapabilities": "Planned Capabilities in This Module",
+    "activeBookLabel": "Active Book Project",
+    "noBookPrompt": "Create or select a book project to get started.",
+    "openProjects": "Manage Books",
+    "hashLabel": "SHA-256 WorldHash"
+  },
+  "settingsView": {
+    "tabs": {
+      "general": "General",
+      "aiProviders": "AI Providers"
+    },
+    "languageCard": {
+      "title": "Application Language",
+      "description": "Your selected language is saved in story_studio.db and restored on launch."
+    },
+    "themeCard": {
+      "title": "Appearance & Theme",
+      "description": "Pick the atmosphere that fits your writing mood. Changes apply immediately and persist in SQLite.",
+      "active": "Active"
+    },
+    "aiProvidersCard": {
+      "title": "AI Providers (BYOK)",
+      "description": "Google Gemini, OpenAI, Anthropic, and Ollama/Custom provider keys are encrypted using OS-native safeStorage.",
+      "activeBadge": "Active · OS Encrypted",
+      "manageButton": "Manage AI Providers"
+    },
+    "storageCard": {
+      "title": "Local Storage (SQLite)",
+      "description": "All projects, preferences, and compressed chapter texts are stored locally inside story_studio.db.",
+      "activeBadge": "Active · Zstd/Gzip + SHA-256",
+      "pathLabel": "Database Path",
+      "sizeLabel": "File Size",
+      "projectsLabel": "Saved Books"
+    }
+  },
+  "aiProviders": {
+    "securityTitle": "OS Encrypted Key Vault (BYOK)",
+    "securityDescription": "Your API keys are encrypted via OS-native secret storage (Windows DPAPI / Keychain) and are never written in plaintext to source code or story_studio.db.",
+    "vaultActive": "Encryption Active",
+    "vaultUnavailable": "Encryption Unavailable",
+    "addFormTitle": "Add AI Provider",
+    "editFormTitle": "Edit AI Provider",
+    "getApiKey": "Get API Key",
+    "quickPresets": "Quick Presets (OpenAI-Compatible)",
+    "nameLabel": "Provider Name",
+    "modelLabel": "Model Name",
+    "baseUrlLabel": "Base URL (OpenAI-Compatible Endpoint)",
+    "apiKeyLabel": "API Key",
+    "optionalLocal": "Optional for local Ollama / LM Studio",
+    "leaveBlankKeep": "Leave blank to keep existing key",
+    "apiKeyPlaceholder": "Paste your API key here...",
+    "keepExistingPlaceholder": "Existing encrypted key will be kept",
+    "defaultWriter": "Default Writer Model",
+    "defaultTranslator": "Default Translator Model",
+    "saveButton": "Save Provider",
+    "updateButton": "Save Changes",
+    "testConnection": "Test Connection",
+    "testShort": "Test",
+    "savedListTitle": "Configured AI Providers",
+    "emptyList": "No AI providers configured yet. Add your own Gemini, OpenAI, Anthropic, or local Ollama endpoint above.",
+    "noKeyLocal": "No key (Local)",
+    "writerRole": "Writer",
+    "translatorRole": "Translator",
+    "edit": "Edit",
+    "errors": {
+      "nameRequired": "Please enter a provider name.",
+      "modelRequired": "Please enter a model name.",
+      "baseUrlRequired": "Base URL is required for custom providers.",
+      "keyRequired": "An API key is required for this provider.",
+      "saveFailed": "Failed to save AI provider."
+    }
+  },
+  "worldView": {
+    "noProjectTitle": "Select a Book Project First",
+    "noProjectSubtitle": "Create a new book project or choose an existing one to build your story world.",
+    "saveChanges": "Save Changes",
+    "saved": "Saved",
+    "saveError": "An error occurred while saving world details.",
+    "genreLabel": "Story Genre",
+    "summaryLabel": "World Overview & Summary",
+    "summaryPlaceholder": "History, geography, atmosphere, and central conflicts of your world...",
+    "elementsTitle": "Universe Rules, Power Systems & Factions",
+    "elementsSubtitle": "Every edit updates the SHA-256 WorldHash automatically so AI delta scans only send changes.",
+    "categoryLabel": "Category",
+    "elementTitleLabel": "Title",
+    "elementTitlePlaceholder": "e.g., Law of Mana Conservation, Shadow Guild...",
+    "elementDescPlaceholder": "Details, constraints, or goals of this rule or faction...",
+    "addElement": "Add",
+    "emptyElements": "No universe rules, magic/power systems, or factions added yet.",
+    "categories": {
+      "all": "All",
+      "rule": "Universe Rule",
+      "magic_power": "Magic / Power System",
+      "faction": "Faction",
+      "lore": "History / Lore"
+    }
+  },
+  "charactersView": {
+    "noProjectSubtitle": "Select or create a book project first to manage its characters.",
+    "rosterTitle": "Characters",
+    "newButton": "New",
+    "searchPlaceholder": "Search characters...",
+    "emptyRoster": "No characters in this book yet.",
+    "createHeading": "Create New Character",
+    "nameRequired": "Character name is required.",
+    "saveError": "An error occurred while saving the character.",
+    "tabs": {
+      "profile": "Profile",
+      "modules": "Add to Character",
+      "history": "Progression Log"
+    },
+    "fields": {
+      "name": "Name",
+      "gender": "Gender",
+      "age": "Age",
+      "alignment": "Alignment Slider",
+      "family": "Family (if any)",
+      "abilities": "Abilities",
+      "personality": "Personality",
+      "appearance": "Appearance",
+      "about": "About"
+    },
+    "placeholders": {
+      "name": "e.g., Aria Kaelen"
+    },
+    "alignment": {
+      "evil": "Evil",
+      "gray": "Gray",
+      "good": "Good"
+    },
+    "modules": {
+      "addTitle": "Dynamic 'Add to Character' Modules",
+      "addSubtitle": "Attach custom lists and nested schemas tailored to your world (e.g., Pets, Magical Items, Companions).",
+      "moduleNamePlaceholder": "List name (e.g., Pets)",
+      "schemaPlaceholder": "Sub-fields comma-separated (e.g., Evolution Path, Backstory, Abilities)",
+      "createList": "Add List",
+      "defaultFieldLabel": "Details",
+      "empty": "No custom lists attached yet. Pick a quick template above or define your own custom schema.",
+      "newEntryPlaceholder": "New item name for {{moduleName}}...",
+      "addEntry": "Add Item",
+      "extraFieldPlaceholder": "Extra sub-field label (e.g., Weakness)...",
+      "addField": "Add Field",
+      "templates": {
+        "pets": {
+          "name": "Pets",
+          "fields": ["Evolution Path", "Backstory", "Abilities"]
+        },
+        "items": {
+          "name": "Magical Items",
+          "fields": ["Rarity / Tier", "Power", "Origin"]
+        },
+        "companions": {
+          "name": "Partners / Companions",
+          "fields": ["Relationship", "Abilities", "Notes"]
+        }
+      }
+    },
+    "history": {
+      "addTitle": "Append to Character Progression Log",
+      "addSubtitle": "Growth never overwrites previous history—milestones are appended chronologically.",
+      "chapterPlaceholder": "Chapter # (e.g., 3)",
+      "summaryPlaceholder": "e.g., Lvl 1 → Lvl 2 or New Skill: Shadow Step",
+      "addButton": "Append",
+      "inChapter": "Chapter {{num}}",
+      "empty": "No progression milestones yet. Add one above or approve AI-detected changes after chapters in Phase 7."
+    }
+  },
+  "chaptersView": {
+    "noProjectSubtitle": "Select or create a book project first to organize chapters and drafts.",
+    "slotsTitle": "Chapter Slots",
+    "newSlotPlaceholder": "New chapter title...",
+    "addSlot": "Add Chapter",
+    "defaultChapterTitle": "Chapter {{num}}",
+    "emptySlots": "No chapter slots yet. Create your first chapter above.",
+    "selectOrCreateTitle": "Select or Create a Chapter",
+    "selectOrCreateSubtitle": "Each chapter slot gives you dedicated Draft, Main Text, and Translated Texts tabs.",
+    "titleRequired": "Chapter title cannot be empty.",
+    "saveError": "An error occurred while saving the chapter.",
+    "wordCount": "{{count}} words",
+    "charCount": "{{count}} chars",
+    "status": {
+      "Draft": "Draft",
+      "Completed": "Completed"
+    },
+    "tabs": {
+      "draft": "Draft",
+      "content": "Main Text",
+      "translations": "Translated Texts"
+    },
+    "draftHint": "Outline scenes, key beats, and notes for this chapter slot (scanned by the AI writing engine).",
+    "draftPlaceholder": "Scene 1: ...\nScene 2: ...\nChapter hook: ...",
+    "contentPlaceholder": "Write your chapter prose here... (Ctrl+S saves as a Zstd-compressed BLOB)",
+    "translationsEmptyTitle": "No translations for this chapter yet",
+    "translationsEmptySubtitle": "Translate this chapter from the Translation & Glossary workspace to view language tabs here."
+  },
+  "arcView": {
+    "noProjectSubtitle": "Select or create a book project first to open the infinite Arc Board.",
+    "addEvent": "Add Event Card",
+    "addNote": "Add Sticky Note",
+    "toolbarHint": "Drag cards, draw arrows from handles, double-click a card for long notes.",
+    "saveBoard": "Save Board",
+    "eventBadge": "Event",
+    "noteBadge": "Note",
+    "newEventTitle": "Event #{{num}}",
+    "newNoteTitle": "Note #{{num}}",
+    "clickToEdit": "Double-click to edit...",
+    "openLongNote": "Open full note",
+    "emptyTitle": "Infinite Arc Canvas Ready",
+    "emptySubtitle": "Add event cards or sticky notes above and connect them with directional arrows.",
+    "modalTitle": "Card Details & Long Notes",
+    "cardTypeLabel": "Card Type",
+    "tagLabel": "Tag (Optional)",
+    "tagPlaceholder": "e.g., Arc 1, Turning Point",
+    "cardTitleLabel": "Title",
+    "notesLabel": "Detailed Notes",
+    "notesPlaceholder": "Long-form scene notes, twists, or lore links for this card...",
+    "applyCard": "Apply"
+  },
+  "aiPanel": {
+    "title": "AI Writing Engine",
+    "toggleBtn": "AI Panel",
+    "metricsToggle": "Metrics",
+    "deltaTitle": "Delta Scan",
+    "deltaSummary": "{{changed}} updated item(s) to sync · {{cached}} unchanged skipped (token savings)",
+    "interventionLabel": "Intervention Level",
+    "interventionLow": "0% Polish Only",
+    "interventionHigh": "100% Creative Expansion",
+    "lengthLabel": "Chapter Length",
+    "lengths": {
+      "shorten": "Shorten",
+      "approximate": "Approximate",
+      "extend": "Extend"
+    },
+    "writingLanguageLabel": "Writing Tone / Register (10)",
+    "writingStylesLabel": "Writing Styles (20 Multi-Select)",
+    "generateOutlineBtn": "Generate Chapter Flow (Steps 1–3)",
+    "step3Title": "Step 3 · Chapter Outline",
+    "approvalLockBadge": "Approval Lock Active",
+    "outlineFeedbackPlaceholder": "Feedback to refine outline...",
+    "reviseOutline": "Revise",
+    "startWritingBtn": "Start Writing Chapter",
+    "step4Title": "Step 4 · Writing & Iteration",
+    "continueImprovingBtn": "Continue Improving",
+    "completeChapterBtn": "Complete Chapter",
+    "proseFeedbackPlaceholder": "Describe what to revise or deepen in the chapter...",
+    "printRewriteBtn": "Generate Rewrite",
+    "step5Title": "Step 5 · Detected Character Progressions",
+    "noProgressionsDetected": "No permanent character changes detected in this chapter. Chapter saved as Completed.",
+    "approveHistoryBtn": "Approve & Append",
+    "approvedAdded": "Appended to history",
+    "rejectBtn": "Dismiss",
+    "genericError": "An error occurred during the AI request."
+  },
+  "translationView": {
+    "noProjectSubtitle": "Select or create a book project first to translate chapters and manage your glossary.",
+    "tabs": {
+      "studio": "Translation Studio",
+      "glossary": "Technical Terms Glossary"
+    },
+    "noChapters": "No chapters yet",
+    "swapLangs": "Swap Languages",
+    "customLanguageOption": "Other / Custom Language...",
+    "customLangPlaceholder": "e.g., Portuguese / pt",
+    "targetLangRequired": "Please specify a target language.",
+    "glossaryActiveCount": "{{count}} glossary term(s) active",
+    "aiTranslateBtn": "Translate with AI",
+    "aiTranslatedSuccess": "Translation complete ({{model}}) · {{count}} glossary term(s) injected and saved compressed.",
+    "translateError": "An error occurred during translation.",
+    "saveError": "An error occurred while saving the translation.",
+    "sourcePaneTitle": "Source Text",
+    "sourceEmptyPlaceholder": "The selected chapter has no main prose yet. Write and save it in Chapters first.",
+    "targetPaneTitle": "Translated Text",
+    "targetPlaceholder": "Translate with AI or edit and save your translation directly here...",
+    "glossaryTitle": "Technical Terms Glossary (Two-Column)",
+    "glossarySubtitle": "Every term and usage rule below is automatically injected into AI translation prompts for lore consistency.",
+    "glossarySearchPlaceholder": "Search terms or rules...",
+    "termColumnLabel": "Term",
+    "descColumnLabel": "Description & Usage Rule",
+    "termPlaceholder": "e.g., Mana, Ether, Shadow Step",
+    "descPlaceholder": "e.g., Keep untranslated as 'Mana'; refers to raw arcane energy.",
+    "glossaryEmpty": "No glossary terms yet. Add your world's special terms above."
+  }
+}

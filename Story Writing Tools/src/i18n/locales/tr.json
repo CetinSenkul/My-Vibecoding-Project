@@ -1,0 +1,409 @@
+{
+  "app": {
+    "name": "StoryStudio",
+    "tagline": "AI Destekli Kitap Yazma Atölyesi",
+    "phaseBadge": "Aşama 2 · SQLite Aktif",
+    "noProjectSelected": "Aktif Kitap Yok",
+    "createOrSelectProject": "Yeni kitap oluştur veya seç"
+  },
+  "nav": {
+    "workspaceGroup": "HİKAYE ATÖLYESİ",
+    "systemGroup": "SİSTEM",
+    "world": "Dünya",
+    "characters": "Karakterler",
+    "arc-board": "Arc Panosu",
+    "chapters": "Bölümler",
+    "translation": "Çeviri & Sözlük",
+    "settings": "Ayarlar"
+  },
+  "topbar": {
+    "language": "Dil",
+    "theme": "Tema",
+    "selectBook": "Kitap Seç"
+  },
+  "projects": {
+    "modalTitle": "Kitap Projeleri",
+    "modalSubtitle": "Projelerin yerel story_studio.db veritabanında kalıcı olarak saklanır.",
+    "yourBooks": "Kayıtlı Kitapların",
+    "emptyTitle": "Henüz bir kitap projesi yok",
+    "emptySubtitle": "Sağdaki formdan ilk kitabını oluşturarak başla.",
+    "activeBadge": "Aktif",
+    "createHeading": "Yeni Kitap Oluştur",
+    "titleLabel": "Kitap Adı",
+    "titlePlaceholder": "Örn: Gölge Kulesi Günlükleri",
+    "genreLabel": "Tür (Opsiyonel)",
+    "genrePlaceholder": "Örn: Epik Fantastik, Bilim Kurgu, Gizem",
+    "summaryLabel": "Kısa Dünya Özeti (Opsiyonel)",
+    "summaryPlaceholder": "Hikayenin geçtiği evrene dair kısa bir özet...",
+    "createButton": "Kitabı Oluştur",
+    "titleRequired": "Lütfen bir kitap adı gir.",
+    "createError": "Kitap oluşturulurken bir hata oluştu.",
+    "delete": "Projeyi Sil",
+    "confirmDelete": "Sil",
+    "cancel": "Vazgeç",
+    "close": "Kapat",
+    "switchButton": "Değiştir"
+  },
+  "themes": {
+    "dark": {
+      "name": "Karanlık",
+      "description": "Uzun gece yazımları için göz yormayan mat koyu palet."
+    },
+    "light": {
+      "name": "Aydınlık",
+      "description": "Kırık beyaz kağıt tonlarıyla ferah okuma ve yazma deneyimi."
+    },
+    "space": {
+      "name": "Uzay",
+      "description": "Derin gece laciverti, mor nebula ve soğuk yıldız ışığı vurguları."
+    },
+    "fantasy": {
+      "name": "Fantastik",
+      "description": "Parşömen, sıcak altın, koyu bordo ve zümrüt kitap atmosferi."
+    }
+  },
+  "languages": {
+    "tr": "Türkçe",
+    "en": "English"
+  },
+  "sections": {
+    "world": {
+      "title": "Hikaye Dünyası Taslağı",
+      "subtitle": "Evreninin türünü, temel kurallarını, büyü/güç sistemlerini ve fraksiyonlarını burada şekillendir.",
+      "plannedPhase": "Aşama 4",
+      "highlights": [
+        "Hikaye türü ve genel dünya özeti",
+        "Yapılandırılmış evren kuralları ve büyü/güç sistemleri",
+        "Token tasarrufu için otomatik SHA-256 içerik özeti (WorldHash)"
+      ]
+    },
+    "characters": {
+      "title": "Karakter Sistemi",
+      "subtitle": "Standart profiller, iyilik yatkınlığı, özel alt modüller ve kronolojik gelişim geçmişi.",
+      "plannedPhase": "Aşama 4",
+      "highlights": [
+        "0–100 İyilik Yatkınlığı (Kötü / Gri / İyi) kaydırıcısı",
+        "Dinamik 'Karaktere Ekle' alt listeleri (Evcil Hayvan, Büyü Eşyaları vb.)",
+        "Bölüm referanslı kronolojik Karakter Geçmişi zaman çizelgesi"
+      ]
+    },
+    "arc-board": {
+      "title": "Arc Taslağı Panosu",
+      "subtitle": "Sonsuz 2D tuval üzerinde olay kareleri, notlar ve yönlü oklarla kurgunu görselleştir.",
+      "plannedPhase": "Aşama 6",
+      "highlights": [
+        "React Flow ile her yöne sınırsız zoom/pan desteği",
+        "Olay kareleri, yapışkan notlar ve yönlü ok bağlantıları",
+        "Uzun notlu kartlar için tuvali bozmayan detay penceresi"
+      ]
+    },
+    "chapters": {
+      "title": "Bölümler ve Taslak Editörü",
+      "subtitle": "Bölüm slotları, düzenli taslak alanları, sıkıştırılmış metin depolama ve 5 adımlı AI yazım motoru.",
+      "plannedPhase": "Aşama 5 & 7",
+      "highlights": [
+        "Her bölüm için ayrı Taslak, Ana Metin ve Çeviri sekmeleri",
+        "Zstd/Gzip sıkıştırılmış BLOB depolama ile ultra düşük disk kullanımı",
+        "Onay kilitli 5 adımlı AI yazım motoru ve 20 stil / 10 dil metriği"
+      ]
+    },
+    "translation": {
+      "title": "Çeviri ve Teknik Terimler Sözlüğü",
+      "subtitle": "Kaynak → hedef dil seçimi ve özel terimler sözlüğüyle tutarlı çok dilli çeviriler.",
+      "plannedPhase": "Aşama 8",
+      "highlights": [
+        "Serbest kaynak → hedef dil çifti seçimi (TR ↔ EN ve diğer diller)",
+        "İki bölmeli Teknik Terimler Sözlüğü (Kelime | Açıklama ve kullanım kuralı)",
+        "Bölüm bazlı sıkıştırılmış çeviri arşivi"
+      ]
+    },
+    "settings": {
+      "title": "Ayarlar",
+      "subtitle": "Uygulama dilini, görsel temasını, yerel veritabanı durumunu ve AI sağlayıcı ayarlarını yönet."
+    }
+  },
+  "placeholder": {
+    "upcomingBadge": "Planlanan Modül",
+    "keyCapabilities": "Bu Modülde Yer Alacak Özellikler",
+    "activeBookLabel": "Aktif Kitap Projesi",
+    "noBookPrompt": "Başlamak için bir kitap projesi oluştur veya seç.",
+    "openProjects": "Kitapları Yönet",
+    "hashLabel": "SHA-256 WorldHash"
+  },
+  "settingsView": {
+    "tabs": {
+      "general": "Genel",
+      "aiProviders": "AI Sağlayıcıları"
+    },
+    "languageCard": {
+      "title": "Uygulama Ana Dili",
+      "description": "Seçilen dil story_studio.db içinde saklanır ve uygulama yeniden açıldığında korunur."
+    },
+    "themeCard": {
+      "title": "Görünüm ve Tema",
+      "description": "Yazım atmosferine en uygun temayı seç. Değişiklik anında uygulanır ve veritabanına kaydedilir.",
+      "active": "Aktif"
+    },
+    "aiProvidersCard": {
+      "title": "AI Sağlayıcıları (BYOK)",
+      "description": "Google Gemini, OpenAI, Anthropic ve Ollama/Özel sağlayıcı anahtarları işletim sisteminin şifreli kasasında (safeStorage) tutulur.",
+      "activeBadge": "Aktif · OS Şifreli",
+      "manageButton": "AI Sağlayıcılarını Yönet"
+    },
+    "storageCard": {
+      "title": "Yerel Depolama (SQLite)",
+      "description": "Tüm projeler, ayarlar ve sıkıştırılmış bölüm metinleri yerel story_studio.db veritabanında tutulur.",
+      "activeBadge": "Aktif · Zstd/Gzip + SHA-256",
+      "pathLabel": "Veritabanı Konumu",
+      "sizeLabel": "Dosya Boyutu",
+      "projectsLabel": "Kayıtlı Kitap"
+    }
+  },
+  "aiProviders": {
+    "securityTitle": "OS Şifreli Anahtar Kasası (BYOK)",
+    "securityDescription": "API anahtarların yalnızca işletim sisteminin şifreli kasasında (Windows DPAPI / Keychain) saklanır; kaynak koda veya story_studio.db veritabanına asla düz metin yazılmaz.",
+    "vaultActive": "Şifreleme Aktif",
+    "vaultUnavailable": "Şifreleme Kullanılamıyor",
+    "addFormTitle": "Yeni AI Sağlayıcısı Ekle",
+    "editFormTitle": "AI Sağlayıcısını Düzenle",
+    "getApiKey": "API Anahtarı Al",
+    "quickPresets": "Hızlı Ön Ayarlar (OpenAI Uyumlu)",
+    "nameLabel": "Sağlayıcı Adı",
+    "modelLabel": "Model Adı",
+    "baseUrlLabel": "Base URL (OpenAI Uyumlu Endpoint)",
+    "apiKeyLabel": "API Anahtarı",
+    "optionalLocal": "Yerel Ollama/LM Studio için boş bırakılabilir",
+    "leaveBlankKeep": "Mevcut anahtarı korumak için boş bırak",
+    "apiKeyPlaceholder": "API anahtarını buraya yapıştır...",
+    "keepExistingPlaceholder": "Mevcut şifreli anahtar korunacak",
+    "defaultWriter": "Varsayılan Yazım Modeli",
+    "defaultTranslator": "Varsayılan Çeviri Modeli",
+    "saveButton": "Sağlayıcıyı Kaydet",
+    "updateButton": "Değişiklikleri Kaydet",
+    "testConnection": "Bağlantıyı Test Et",
+    "testShort": "Test Et",
+    "savedListTitle": "Kayıtlı AI Sağlayıcıları",
+    "emptyList": "Henüz kayıtlı bir AI sağlayıcısı yok. Yukarıdan kendi Gemini, OpenAI, Anthropic veya yerel Ollama bağlantını ekleyebilirsin.",
+    "noKeyLocal": "Anahtar yok (Yerel)",
+    "writerRole": "Yazım",
+    "translatorRole": "Çeviri",
+    "edit": "Düzenle",
+    "errors": {
+      "nameRequired": "Lütfen sağlayıcı için bir ad gir.",
+      "modelRequired": "Lütfen bir model adı gir.",
+      "baseUrlRequired": "Özel sağlayıcılar için Base URL zorunludur.",
+      "keyRequired": "Bu sağlayıcı için API anahtarı zorunludur.",
+      "saveFailed": "Sağlayıcı kaydedilirken hata oluştu."
+    }
+  },
+  "worldView": {
+    "noProjectTitle": "Önce Bir Kitap Projesi Seç",
+    "noProjectSubtitle": "Hikaye dünyanı oluşturmak için yeni bir kitap projesi ekle veya mevcut bir kitabı seç.",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "saved": "Kaydedildi",
+    "saveError": "Dünya bilgileri kaydedilirken bir hata oluştu.",
+    "genreLabel": "Hikaye Türü",
+    "summaryLabel": "Genel Dünya Özeti",
+    "summaryPlaceholder": "Evreninin tarihçesi, coğrafyası, atmosferi ve ana çatışması...",
+    "elementsTitle": "Evren Kuralları, Güç Sistemleri ve Fraksiyonlar",
+    "elementsSubtitle": "Her değişiklikte SHA-256 WorldHash otomatik güncellenir; AI yalnızca değişen kısımları tarar.",
+    "categoryLabel": "Kategori",
+    "elementTitleLabel": "Başlık",
+    "elementTitlePlaceholder": "Örn: Mana Akışı Kuralı, Gölge Loncası...",
+    "elementDescPlaceholder": "Kuralın detayları, sınırları veya fraksiyonun amacı...",
+    "addElement": "Ekle",
+    "emptyElements": "Henüz bir evren kuralı, büyü/güç sistemi veya fraksiyon eklenmedi.",
+    "categories": {
+      "all": "Tümü",
+      "rule": "Evren Kuralı",
+      "magic_power": "Büyü / Güç Sistemi",
+      "faction": "Fraksiyon",
+      "lore": "Tarih / Lore"
+    }
+  },
+  "charactersView": {
+    "noProjectSubtitle": "Karakter oluşturmak ve yönetmek için önce bir kitap projesi seç.",
+    "rosterTitle": "Karakterler",
+    "newButton": "Yeni",
+    "searchPlaceholder": "Karakter ara...",
+    "emptyRoster": "Bu kitapta henüz karakter yok.",
+    "createHeading": "Yeni Karakter Oluştur",
+    "nameRequired": "Karakter adı zorunludur.",
+    "saveError": "Karakter kaydedilirken bir hata oluştu.",
+    "tabs": {
+      "profile": "Profil",
+      "modules": "Karaktere Ekle",
+      "history": "Karakter Geçmişi"
+    },
+    "fields": {
+      "name": "İsim",
+      "gender": "Cinsiyet",
+      "age": "Yaş",
+      "alignment": "İyilik Yatkınlığı (Alignment)",
+      "family": "Aile (varsa)",
+      "abilities": "Yetenekler",
+      "personality": "Kişilik",
+      "appearance": "Dış Görünüş",
+      "about": "Hakkında"
+    },
+    "placeholders": {
+      "name": "Örn: Aria Kaelen"
+    },
+    "alignment": {
+      "evil": "Kötü",
+      "gray": "Gri",
+      "good": "İyi"
+    },
+    "modules": {
+      "addTitle": "Dinamik 'Karaktere Ekle' Modülleri",
+      "addSubtitle": "Hikaye dünyana özel listeler ve alt şemalar ekle (Örn: Evcil Hayvanlar, Büyü Eşyaları, Eşler).",
+      "moduleNamePlaceholder": "Liste adı (Örn: Evcil Hayvanlar)",
+      "schemaPlaceholder": "Alt alanlar virgülle (Örn: Evrim Yolu, Geçmişi, Yetenekleri)",
+      "createList": "Liste Ekle",
+      "defaultFieldLabel": "Detay",
+      "empty": "Bu karaktere henüz özel bir liste eklenmedi. Yukarıdan hazır şablon seçebilir veya kendi şemanı tanımlayabilirsin.",
+      "newEntryPlaceholder": "{{moduleName}} listesine yeni öğe adı...",
+      "addEntry": "Öğe Ekle",
+      "extraFieldPlaceholder": "Ek alt alan adı (Örn: Zayıf Yönü)...",
+      "addField": "Alan Ekle",
+      "templates": {
+        "pets": {
+          "name": "Evcil Hayvanlar",
+          "fields": ["Evrim Yolu", "Geçmişi", "Yetenekleri"]
+        },
+        "items": {
+          "name": "Büyü Eşyaları",
+          "fields": ["Derece / Nadirlik", "Gücü", "Kökeni"]
+        },
+        "companions": {
+          "name": "Eşler / Yoldaşlar",
+          "fields": ["İlişki", "Yetenekleri", "Notlar"]
+        }
+      }
+    },
+    "history": {
+      "addTitle": "Karakter Geçmişine Ekle (Yol Haritası)",
+      "addSubtitle": "Yeni gelişimler eski verinin üstüne yazılmaz; kronolojik zaman çizelgesine eklenir.",
+      "chapterPlaceholder": "Bölüm No (Örn: 3)",
+      "summaryPlaceholder": "Örn: 1. Lvl → 2. Lvl veya Yeni Yetenek: Gölge Adımı",
+      "addButton": "Ekle",
+      "inChapter": "{{num}}. Bölümde",
+      "empty": "Henüz kronolojik gelişim kaydı yok. Yukarıdan manuel ekleyebilir veya Aşama 7'de bölüm sonlarında AI önerileriyle otomatik kaydedebilirsin."
+    }
+  },
+  "chaptersView": {
+    "noProjectSubtitle": "Bölüm slotları oluşturmak ve yazmaya başlamak için önce bir kitap projesi seç.",
+    "slotsTitle": "Bölüm Slotları",
+    "newSlotPlaceholder": "Yeni bölüm başlığı...",
+    "addSlot": "Bölüm Ekle",
+    "defaultChapterTitle": "{{num}}. Bölüm",
+    "emptySlots": "Henüz bir bölüm slotu yok. Yukarıdan ilk bölümünü oluştur.",
+    "selectOrCreateTitle": "Bir Bölüm Seç veya Oluştur",
+    "selectOrCreateSubtitle": "Sol listeden bir bölüm slotu açtığında altında Taslak, Ana Metin ve Çeviri sekmeleri hazır olur.",
+    "titleRequired": "Bölüm başlığı boş olamaz.",
+    "saveError": "Bölüm kaydedilirken hata oluştu.",
+    "wordCount": "{{count}} kelime",
+    "charCount": "{{count}} karakter",
+    "status": {
+      "Draft": "Taslak",
+      "Completed": "Tamamlandı"
+    },
+    "tabs": {
+      "draft": "Taslak",
+      "content": "Ana Metin",
+      "translations": "Çevrilmiş Metinler"
+    },
+    "draftHint": "Bu bölüme ait sahne akışını, olay notlarını ve hatırlatmaları buraya yaz (AI yazım motoru bu alanı tarar).",
+    "draftPlaceholder": "Sahne 1: ...\nSahne 2: ...\nBölüm sonu kancası: ...",
+    "contentPlaceholder": "Bölüm metnini buraya yaz... (Ctrl+S ile Zstd sıkıştırılmış BLOB olarak kaydedilir)",
+    "translationsEmptyTitle": "Bu bölüm için henüz çeviri yok",
+    "translationsEmptySubtitle": "Çeviri & Sözlük sekmesinden bu bölümü istediğin dile çevirdiğinde kayıtlar burada listelenir."
+  },
+  "arcView": {
+    "noProjectSubtitle": "Arc taslağı panosunu kullanmak için önce bir kitap projesi seç.",
+    "addEvent": "Olay Karesi Ekle",
+    "addNote": "Yapışkan Not Ekle",
+    "toolbarHint": "Kartları sürükle, noktalardan yönlü ok çek, detay için çift tıkla.",
+    "saveBoard": "Panoyu Kaydet",
+    "eventBadge": "Olay",
+    "noteBadge": "Not",
+    "newEventTitle": "Olay #{{num}}",
+    "newNoteTitle": "Not #{{num}}",
+    "clickToEdit": "Düzenlemek için çift tıkla...",
+    "openLongNote": "Uzun notu aç",
+    "emptyTitle": "Sonsuz Arc Panosu Hazır",
+    "emptySubtitle": "Yukarıdan olay kareleri veya yapışkan notlar ekleyip yönlü oklarla olay örgünü kur.",
+    "modalTitle": "Kart Detayları ve Uzun Notlar",
+    "cardTypeLabel": "Kart Türü",
+    "tagLabel": "Etiket (Opsiyonel)",
+    "tagPlaceholder": "Örn: Arc 1, Dönüm Noktası",
+    "cardTitleLabel": "Başlık",
+    "notesLabel": "Detaylı Notlar",
+    "notesPlaceholder": "Bu olay karesine ait uzun açıklamalar, sahne fikirleri veya bağlantılar...",
+    "applyCard": "Uygula"
+  },
+  "aiPanel": {
+    "title": "AI Yazım Motoru",
+    "toggleBtn": "AI Paneli",
+    "metricsToggle": "Metrikler",
+    "deltaTitle": "Delta Taraması",
+    "deltaSummary": "{{changed}} güncel öğe gönderilecek · {{cached}} değişmeyen öğe atlanıyor (token tasarrufu)",
+    "interventionLabel": "Metne Müdahale Yüzdesi",
+    "interventionLow": "0% Gramer/Akıcılık",
+    "interventionHigh": "100% Yaratıcı Genişletme",
+    "lengthLabel": "Bölüm Uzunluğu",
+    "lengths": {
+      "shorten": "Kısalt",
+      "approximate": "Yaklaşık",
+      "extend": "Uzat"
+    },
+    "writingLanguageLabel": "Yazım Dili (10 Seçenek)",
+    "writingStylesLabel": "Yazım Stili (20 Seçenek)",
+    "generateOutlineBtn": "Bölüm Akışı Oluştur (Adım 1–3)",
+    "step3Title": "Adım 3 · Bölüm Akışı",
+    "approvalLockBadge": "Onay Kilidi Aktif",
+    "outlineFeedbackPlaceholder": "Akış için revize notu yaz...",
+    "reviseOutline": "Revize Et",
+    "startWritingBtn": "Bölümü Yazmaya Başla",
+    "step4Title": "Adım 4 · Yazım ve İterasyon",
+    "continueImprovingBtn": "Geliştirmeye Devam Et",
+    "completeChapterBtn": "Bölümü Tamamla",
+    "proseFeedbackPlaceholder": "Bölümde değiştirmek veya güçlendirmek istediğin noktaları yaz...",
+    "printRewriteBtn": "Yazdır",
+    "step5Title": "Adım 5 · Tespit Edilen Karakter Gelişimleri",
+    "noProgressionsDetected": "Bu bölümde kalıcı karakter gelişimi tespit edilmedi. Bölüm tamamlandı olarak kaydedildi.",
+    "approveHistoryBtn": "Onayla ve Geçmişe Ekle",
+    "approvedAdded": "Geçmişe eklendi",
+    "rejectBtn": "Atla",
+    "genericError": "AI isteği sırasında bir hata oluştu."
+  },
+  "translationView": {
+    "noProjectSubtitle": "Çeviri yapmak ve teknik terimler sözlüğü oluşturmak için önce bir kitap projesi seç.",
+    "tabs": {
+      "studio": "Çeviri Stüdyosu",
+      "glossary": "Teknik Terimler Sözlüğü"
+    },
+    "noChapters": "Henüz bölüm yok",
+    "swapLangs": "Dilleri Değiştir",
+    "customLanguageOption": "Diğer / Özel Dil...",
+    "customLangPlaceholder": "Örn: Portekizce / pt",
+    "targetLangRequired": "Lütfen bir hedef dil belirle.",
+    "glossaryActiveCount": "{{count}} sözlük terimi aktif",
+    "aiTranslateBtn": "AI ile Çevir",
+    "aiTranslatedSuccess": "Çeviri tamamlandı ({{model}}) · {{count}} teknik sözlük terimi prompt'a eklendi ve sıkıştırılarak kaydedildi.",
+    "translateError": "Çeviri sırasında bir hata oluştu.",
+    "saveError": "Çeviri kaydedilirken bir hata oluştu.",
+    "sourcePaneTitle": "Kaynak Metin",
+    "sourceEmptyPlaceholder": "Seçili bölümde henüz ana metin yok. Önce Bölümler ekranından metni yazıp kaydet.",
+    "targetPaneTitle": "Çevrilmiş Metin",
+    "targetPlaceholder": "AI ile çevirebilir veya çeviriyi doğrudan burada düzenleyip kaydedebilirsin...",
+    "glossaryTitle": "Teknik Terimler Sözlüğü (İki Bölmeli)",
+    "glossarySubtitle": "AI çeviri yaparken buradaki her terimi ve kullanım kuralını kaynak → hedef dil bağlamıyla prompt'a otomatik ekler.",
+    "glossarySearchPlaceholder": "Terim veya kural ara...",
+    "termColumnLabel": "Kelime / Terim",
+    "descColumnLabel": "Açıklama ve Kullanım Kuralı",
+    "termPlaceholder": "Örn: Mana, Eter, Gölge Adımı",
+    "descPlaceholder": "Örn: Çevrilmeden 'Mana' olarak bırakılır; büyü enerjisini ifade eder.",
+    "glossaryEmpty": "Sözlükte henüz terim yok. Yukarıdan evrenine özel kavramları ekleyebilirsin."
+  }
+}

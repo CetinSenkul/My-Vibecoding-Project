@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-canvas: var(--bg-canvas);
+  --color-sidebar: var(--bg-sidebar);
+  --color-surface: var(--bg-surface);
+  --color-elevated: var(--bg-elevated);
+  --color-ink: var(--text-primary);
+  --color-ink-secondary: var(--text-secondary);
+  --color-ink-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-fg: var(--accent-fg);
+  --color-highlight: var(--highlight);
+  --color-edge: var(--border-color);
+  --color-edge-strong: var(--border-strong);
+  --font-display: var(--display-font);
+}
+
+/* 1. Dark Theme (Default — Restful Matte Dark) */
+:root,
+[data-theme="dark"] {
+  --bg-canvas: #111318;
+  --bg-sidebar: #161922;
+  --bg-surface: #1b1f2a;
+  --bg-elevated: #232836;
+  --text-primary: #eceef5;
+  --text-secondary: #b1b7c9;
+  --text-muted: #767e96;
+  --accent: #818cf8;
+  --accent-hover: #6366f1;
+  --accent-soft: rgba(129, 140, 248, 0.14);
+  --accent-fg: #ffffff;
+  --highlight: #34d399;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --ambient-glow: radial-gradient(circle at 80% 0%, rgba(99, 102, 241, 0.08), transparent 45%);
+  --display-font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+
+/* 2. Light Theme (Clean Warm Off-White) */
+[data-theme="light"] {
+  --bg-canvas: #f6f5f0;
+  --bg-sidebar: #eeece5;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f2f0ea;
+  --text-primary: #1a1c23;
+  --text-secondary: #4a4f5e;
+  --text-muted: #787e8f;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: rgba(79, 70, 229, 0.1);
+  --accent-fg: #ffffff;
+  --highlight: #0d9488;
+  --border-color: rgba(26, 28, 35, 0.09);
+  --border-strong: rgba(26, 28, 35, 0.18);
+  --ambient-glow: radial-gradient(circle at 85% 0%, rgba(79, 70, 229, 0.05), transparent 45%);
+  --display-font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+
+/* 3. Space Theme (Deep Cosmic Navy & Nebula Violet) */
+[data-theme="space"] {
+  --bg-canvas: #070b1a;
+  --bg-sidebar: #0b1126;
+  --bg-surface: #101833;
+  --bg-elevated: #172247;
+  --text-primary: #e6f0ff;
+  --text-secondary: #9db4d9;
+  --text-muted: #647aa6;
+  --accent: #38bdf8;
+  --accent-hover: #0ea5e9;
+  --accent-soft: rgba(56, 189, 248, 0.15);
+  --accent-fg: #04101f;
+  --highlight: #c084fc;
+  --border-color: rgba(125, 175, 255, 0.13);
+  --border-strong: rgba(167, 139, 250, 0.32);
+  --ambient-glow:
+    radial-gradient(circle at 85% 10%, rgba(139, 92, 246, 0.18), transparent 42%),
+    radial-gradient(circle at 18% 88%, rgba(56, 189, 248, 0.12), transparent 40%);
+  --display-font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+
+/* 4. Fantasy Theme (Parchment, Warm Gold, Deep Burgundy & Emerald) */
+[data-theme="fantasy"] {
+  --bg-canvas: #f2e8cf;
+  --bg-sidebar: #e8dab8;
+  --bg-surface: #fbf6e9;
+  --bg-elevated: #efe3c6;
+  --text-primary: #2c1e16;
+  --text-secondary: #5c4534;
+  --text-muted: #866b54;
+  --accent: #8c1d2e;
+  --accent-hover: #6f1523;
+  --accent-soft: rgba(140, 29, 46, 0.11);
+  --accent-fg: #fdf8ec;
+  --highlight: #1f5c4a;
+  --border-color: rgba(154, 114, 48, 0.24);
+  --border-strong: rgba(184, 134, 11, 0.52);
+  --ambient-glow:
+    radial-gradient(circle at 85% 5%, rgba(200, 155, 60, 0.16), transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(31, 92, 74, 0.08), transparent 40%);
+  --display-font: "Georgia", "Palatino Linotype", "Book Antiqua", serif;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 200ms ease, color 200ms ease;
+  overflow: hidden;
+}
+
+.app-ambient-canvas {
+  background-color: var(--bg-canvas);
+  background-image: var(--ambient-glow);
+}
+
+/* Subtle custom scrollbars matching the active theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Theme-aware React Flow controls & canvas surface */
+.react-flow {
+  --xy-background-color-default: var(--bg-canvas);
+  --xy-edge-stroke-default: var(--accent);
+  --xy-edge-stroke-selected-default: var(--highlight);
+  --xy-controls-button-background-color-default: var(--bg-surface);
+  --xy-controls-button-background-color-hover-default: var(--bg-elevated);
+  --xy-controls-button-color-default: var(--text-primary);
+  --xy-controls-button-border-color-default: var(--border-color);
+  --xy-minimap-background-color-default: var(--bg-surface);
+  --xy-minimap-mask-background-color-default: rgba(0, 0, 0, 0.25);
+  --xy-minimap-node-background-color-default: var(--accent);
+}
