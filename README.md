@@ -1,9 +1,9 @@
 # My Vibecoding Projects
 
-Bu depo, vibecoding ile geliştirdiğim projeleri düzenli alt klasörler halinde barındırır.
+This repository hosts the projects I have developed through vibecoding in organized subfolders.
 
-## Projeler
+## Projects
 
-| Proje | Açıklama | Teknoloji |
+| Project | Description | Technology |
 | :--- | :--- | :--- |
-| [**Planning Tools Project**](./Planning%20Tools%20Project/README.md) | **Time Planner v1.0** — 3 modlu takvim, kronometre, Süreç/Görev + Tamamlanan hedefler, İzin Günü (`DayOff`), 4 dinamik tema ve etkileşimli `LiveCharts2` grafikleri sunan yerel Windows masaüstü uygulaması. | C# (.NET 8), WPF, SQLite, LiveCharts2 |
+| [Planning Tools Project](#) | **Time Planner v1.0** — A local Windows desktop application featuring a 3-mode calendar, stopwatch, Process/Task + Completed goals, Day Off (`DayOff`), 4 dynamic themes, and interactive `LiveCharts2` charts. | C# (.NET 8), WPF, SQLite, LiveCharts2 |
